@@ -9,11 +9,12 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "*": [
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
       "prettier --write"
     ],
-    "*.{js,jsx,ts,tsx}": [
-      "eslint --fix"
+    "*.{json,md,css,scss,html,yml,yaml}": [
+      "prettier --write"
     ]
   },
   "dependencies": {
@@ -29,7 +30,6 @@
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.4",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "^3.7.4",
