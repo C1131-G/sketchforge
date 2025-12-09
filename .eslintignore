@@ -1,0 +1,19 @@
+node_modules/
+.pnpm-store/
+.next/
+dist/
+build/
+coverage/
+
+# Next.js build artifacts
+out/
+
+# Static assets (no lint needed)
+public/
+
+# Logs
+*.log
+
+# Ignore config outputs
+*.config.js
+*.config.cjs

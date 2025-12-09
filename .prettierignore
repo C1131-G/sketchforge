@@ -1,0 +1,23 @@
+node_modules/
+.pnpm-store/
+.next/
+dist/
+build/
+coverage/
+
+out/
+
+# Static assets
+public/
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.*
+.env.local
+.env.*.local
+
+# Ignore large directories
+.vercel/
