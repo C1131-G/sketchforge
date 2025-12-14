@@ -1,5 +1,5 @@
 import { prisma } from '@/core/db/src/prisma'
-import { logger } from '@/lib/logger/logger'
+import { logError } from '@/lib/logger/helper'
 
 export const userDal = {
   getByEmail: async (email: string) => {
@@ -8,7 +8,11 @@ export const userDal = {
         where: { email },
       })
     } catch (err) {
-      logger.error({ err }, 'DAL getByEmail failed')
+      logError(
+        { event: 'db', action: 'user.getByEmail', meta: { email } },
+        err,
+        'USER dal getByEmail crashed',
+      )
       return null
     }
   },

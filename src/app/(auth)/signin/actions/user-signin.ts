@@ -3,8 +3,8 @@
 import { signinSchema } from '@/features/user/validation/signin.schema'
 import { auth } from '@/core/auth/auth'
 import bcrypt from 'bcryptjs'
-import { logger } from '@/lib/logger/logger'
 import { userService } from '@/features/user/service/user.service'
+import { logError, logFailed, logSuccess } from '@/lib/logger/helper'
 
 export async function signIn(fromData: FormData) {
   try {
@@ -15,6 +15,10 @@ export async function signIn(fromData: FormData) {
 
     const validated = signinSchema.safeParse(raw)
     if (!validated.success) {
+      logFailed(
+        { event: 'auth', action: 'signin' },
+        'Signin failed: validation',
+      )
       return {
         success: false,
         error: 'validation failed',
@@ -25,6 +29,10 @@ export async function signIn(fromData: FormData) {
 
     const checkUser = await userService.findByEmail(email)
     if (!checkUser.success || !checkUser.data) {
+      logFailed(
+        { event: 'auth', action: 'signin', meta: { email } },
+        'Signin failed: user not found',
+      )
       return {
         success: false,
         error: checkUser.error || 'Invalid email or account does not exist',
@@ -35,9 +43,13 @@ export async function signIn(fromData: FormData) {
 
     const checkPassword = await bcrypt.compare(password, user.hashedPassword)
     if (!checkPassword) {
+      logFailed(
+        { event: 'auth', action: 'signin', userId: user.id },
+        'Signin failed: Invalid password',
+      )
       return {
         success: false,
-        error: 'Invalid password',
+        error: 'Invalid email or password',
       }
     }
 
@@ -49,6 +61,11 @@ export async function signIn(fromData: FormData) {
       },
     })
 
+    logSuccess(
+      { event: 'auth', action: 'signin', userId: user.id },
+      'Signin successful',
+    )
+
     return {
       success: true,
       data: {
@@ -59,10 +76,11 @@ export async function signIn(fromData: FormData) {
       },
     }
   } catch (err) {
-    logger.error(err)
+    logError({ event: 'auth', action: 'signin' }, err, 'Signin crashed')
+
     return {
       success: false,
-      data: err instanceof Error ? err.message : 'server error',
+      error: 'Something went wrong. Please try again.',
     }
   }
 }

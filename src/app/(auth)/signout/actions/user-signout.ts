@@ -2,13 +2,15 @@
 
 import { auth } from '@/core/auth/auth'
 import { headers } from 'next/headers'
-import { logger } from '@/lib/logger/logger'
+import { logError, logSuccess } from '@/lib/logger/helper'
 
 export async function signOut() {
   try {
     const result = await auth.api.signOut({
       headers: await headers(),
     })
+
+    logSuccess({ event: 'auth', action: 'signout' }, 'Signout successful')
 
     return {
       success: true,
@@ -17,11 +19,11 @@ export async function signOut() {
       },
     }
   } catch (err) {
-    logger.error(err)
+    logError({ event: 'auth', action: 'signout' }, err, 'Signout crashed')
 
     return {
       success: false,
-      error: err instanceof Error ? err.message : 'server error',
+      error: 'Something went wrong. Please try again.',
     }
   }
 }

@@ -2,9 +2,9 @@
 
 import { signupSchema } from '@/features/user/validation/signup.schema'
 import { auth } from '@/core/auth/auth'
-import { logger } from '@/lib/logger/logger'
 import bcrypt from 'bcryptjs'
 import { userService } from '@/features/user/service/user.service'
+import { logError, logFailed, logSuccess } from '@/lib/logger/helper'
 
 export async function signUp(formData: FormData) {
   try {
@@ -16,6 +16,10 @@ export async function signUp(formData: FormData) {
 
     const validated = signupSchema.safeParse(raw)
     if (!validated.success) {
+      logFailed(
+        { event: 'auth', action: 'signup' },
+        'Signup failed: validation',
+      )
       return {
         success: false,
         error: 'validation failed',
@@ -26,13 +30,27 @@ export async function signUp(formData: FormData) {
 
     const checkUser = await userService.findByEmail(email)
     if (checkUser) {
+      logFailed(
+        { event: 'auth', action: 'signup', meta: { email } },
+        'Signup failed: user not found',
+      )
       return {
         success: false,
-        error: 'User already exists try login!',
+        error: checkUser.error || 'User already exists try login!',
       }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
+    if (!hashedPassword) {
+      logFailed(
+        { event: 'auth', action: 'signup', meta: { email } },
+        'Signin failed: Invalid password',
+      )
+      return {
+        success: false,
+        error: 'Invalid email or password',
+      }
+    }
 
     const result = await auth.api.signUpEmail({
       body: {
@@ -43,6 +61,11 @@ export async function signUp(formData: FormData) {
       },
     })
 
+    logSuccess(
+      { event: 'auth', action: 'signup', meta: { email } },
+      'Signup successful',
+    )
+
     return {
       success: true,
       data: {
@@ -51,10 +74,11 @@ export async function signUp(formData: FormData) {
       },
     }
   } catch (err) {
-    logger.error(err)
+    logError({ event: 'auth', action: 'signup' }, err, 'Signup crashed')
+
     return {
       success: false,
-      error: err instanceof Error ? err.message : 'server error',
+      error: 'Something went wrong. Please try again.',
     }
   }
 }
