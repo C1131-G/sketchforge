@@ -8,7 +8,10 @@
     "build": "next build",
     "start": "next start",
     "prepare": "husky",
-    "test": "vitest"
+    "test": "vitest",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

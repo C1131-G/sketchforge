@@ -119,8 +119,7 @@
     visibility BoardVisibility @default(PRIVATE)
 
     metadata Json @default("{}")
-
-    isDeleted Boolean   @default(false)
+    
     deletedAt DateTime?
 
     createdAt DateTime   @default(now())

@@ -24,11 +24,9 @@ export const boardDal = {
   findById: async (boardId: string) => {
     try {
       const board = await prisma.board.findUnique({
-        where: {
-          id: boardId,
-          deletedAt: null,
-        },
+        where: { id: boardId },
       })
+
       if (!board || board.deletedAt) return null
 
       return board
@@ -90,11 +88,9 @@ export const boardDal = {
       return await prisma.board.update({
         where: {
           id: boardId,
-          deletedAt: null,
         },
         data: {
           deletedAt: new Date(),
-          isDeleted: true,
         },
       })
     } catch (err) {
