@@ -2,7 +2,6 @@
 
 import { signupSchema } from '@/features/user/validation/signup.schema'
 import { auth } from '@/core/auth/auth'
-import bcrypt from 'bcryptjs'
 import { userService } from '@/features/user/service/user.service'
 import { logError, logFailed, logSuccess } from '@/lib/logger/helper'
 
@@ -22,33 +21,21 @@ export async function signUp(formData: FormData) {
       )
       return {
         success: false,
-        error: 'validation failed',
+        error: 'Invalid input',
       }
     }
 
     const { email, password, name } = validated.data
 
     const checkUser = await userService.findByEmail(email)
-    if (checkUser) {
+    if (checkUser.success) {
       logFailed(
         { event: 'auth', action: 'signup', meta: { email } },
-        'Signup failed: user not found',
+        'Signup failed: user exists',
       )
       return {
         success: false,
-        error: checkUser.error || 'User already exists try login!',
-      }
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10)
-    if (!hashedPassword) {
-      logFailed(
-        { event: 'auth', action: 'signup', meta: { email } },
-        'Signin failed: Invalid password',
-      )
-      return {
-        success: false,
-        error: 'Invalid email or password',
+        error: checkUser.error || 'User already exists. Please login.',
       }
     }
 
@@ -56,7 +43,7 @@ export async function signUp(formData: FormData) {
       body: {
         name,
         email,
-        password: hashedPassword,
+        password,
         callbackURL: '/',
       },
     })
@@ -78,7 +65,7 @@ export async function signUp(formData: FormData) {
 
     return {
       success: false,
-      error: 'Something went wrong. Please try again.',
+      error: 'Something went wrong',
     }
   }
 }

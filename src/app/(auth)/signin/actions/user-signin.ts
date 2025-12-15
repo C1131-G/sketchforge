@@ -2,7 +2,6 @@
 
 import { signinSchema } from '@/features/user/validation/signin.schema'
 import { auth } from '@/core/auth/auth'
-import bcrypt from 'bcryptjs'
 import { userService } from '@/features/user/service/user.service'
 import { logError, logFailed, logSuccess } from '@/lib/logger/helper'
 
@@ -21,7 +20,7 @@ export async function signIn(fromData: FormData) {
       )
       return {
         success: false,
-        error: 'validation failed',
+        error: 'Invalid input',
       }
     }
 
@@ -35,23 +34,11 @@ export async function signIn(fromData: FormData) {
       )
       return {
         success: false,
-        error: checkUser.error || 'Invalid email or account does not exist',
+        error: checkUser.error || 'Invalid email or password',
       }
     }
 
     const user = checkUser.data
-
-    const checkPassword = await bcrypt.compare(password, user.hashedPassword)
-    if (!checkPassword) {
-      logFailed(
-        { event: 'auth', action: 'signin', userId: user.id },
-        'Signin failed: Invalid password',
-      )
-      return {
-        success: false,
-        error: 'Invalid email or password',
-      }
-    }
 
     const result = await auth.api.signInEmail({
       body: {
@@ -80,7 +67,7 @@ export async function signIn(fromData: FormData) {
 
     return {
       success: false,
-      error: 'Something went wrong. Please try again.',
+      error: 'Something went wrong',
     }
   }
 }

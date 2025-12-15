@@ -2,7 +2,7 @@
 
 import { auth } from '@/core/auth/auth'
 import { redirect } from 'next/navigation'
-import { logError, logSuccess } from '@/lib/logger/helper'
+import { logError, logFailed, logSuccess } from '@/lib/logger/helper'
 
 export async function signInSocial(provider: string) {
   try {
@@ -17,16 +17,15 @@ export async function signInSocial(provider: string) {
       )
       redirect(result.url)
     }
-    logSuccess(
+
+    logFailed(
       { event: 'auth', action: 'signin.social', meta: { provider } },
-      'Social signin completed',
+      'Social signin failed: no redirect URL',
     )
 
     return {
-      success: true,
-      data: {
-        redirected: false,
-      },
+      success: false,
+      error: 'Social sign-in failed.',
     }
   } catch (err) {
     logError(
@@ -37,7 +36,7 @@ export async function signInSocial(provider: string) {
 
     return {
       success: false,
-      error: 'Social sign-in failed. Please try again.',
+      error: 'Social sign-in failed.',
     }
   }
 }
