@@ -22,7 +22,7 @@ export const boardMemberDal = {
           meta: { boardId, userId, role },
         },
         err,
-        'BoardMember dal' + ' addmember crashed',
+        'BoardMember DAL addmember crashed',
       )
       return null
     }
@@ -46,7 +46,7 @@ export const boardMemberDal = {
           meta: { boardId, userId },
         },
         err,
-        'BoardMember' + ' dal' + ' findMemberById crashed',
+        'BoardMember DAL findMemberById crashed',
       )
       return null
     }
@@ -62,7 +62,7 @@ export const boardMemberDal = {
       logError(
         { event: 'db', action: 'boardmember.listMembers', meta: { boardId } },
         err,
-        'BoardMember dal' + ' listMembers crashed',
+        'BoardMember DAL listMembers crashed',
       )
       return null
     }
@@ -126,7 +126,7 @@ export const boardMemberDal = {
           meta: { boardId, token, role },
         },
         err,
-        'BoardMember dal createInvite crashed',
+        'BoardMember DAL createInvite crashed',
       )
       return null
     }

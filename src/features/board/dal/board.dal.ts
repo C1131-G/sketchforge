@@ -7,33 +7,33 @@ export const boardDal = {
     try {
       return await prisma.board.create({
         data: {
-          title,
           ownerId,
+          title,
         },
       })
     } catch (err) {
       logError(
         { event: 'db', action: 'board.createBoard', meta: { ownerId, title } },
         err,
-        'Board dal createBoard' + ' crashed',
+        'Board DAL createBoard crashed',
       )
       return null
     }
   },
 
-  findBoardById: async (id: string) => {
+  findBoardById: async (boardId: string) => {
     try {
       return await prisma.board.findFirst({
         where: {
-          id,
+          id: boardId,
           deletedAt: null,
         },
       })
     } catch (err) {
       logError(
-        { event: 'db', action: 'board.findBoardById', meta: { id } },
+        { event: 'db', action: 'board.findBoardById', meta: { boardId } },
         err,
-        'Board dal' + ' findBoardById' + ' crashed',
+        'Board DAL findBoardById crashed',
       )
       return null
     }
@@ -47,58 +47,72 @@ export const boardDal = {
           deletedAt: null,
         },
         orderBy: {
-          createdAt: 'desc',
+          updatedAt: 'desc',
         },
       })
     } catch (err) {
       logError(
         { event: 'db', action: 'board.listBoardsForOwner', meta: { ownerId } },
         err,
-        'Board dal' + ' listBoardsForOwner crashed',
+        'Board DAL listBoardsForOwner crashed',
       )
       return null
     }
   },
 
-  updateVisibility: async (id: string, visibility: BoardVisibility) => {
+  renameBoard: async (boardId: string, title: string) => {
     try {
       return await prisma.board.update({
-        where: { id },
-        data: {
-          visibility,
-        },
+        where: { id: boardId },
+        data: { title },
+      })
+    } catch (err) {
+      logError(
+        { event: 'db', action: 'board.renameBoard', meta: { boardId, title } },
+        err,
+        'Board DAL renameBoard crashed',
+      )
+      return null
+    }
+  },
+
+  updateVisibility: async (boardId: string, visibility: BoardVisibility) => {
+    try {
+      return await prisma.board.update({
+        where: { id: boardId },
+        data: { visibility },
       })
     } catch (err) {
       logError(
         {
           event: 'db',
           action: 'board.updateVisibility',
-          meta: { id, visibility },
+          meta: { boardId, visibility },
         },
         err,
-        'Board dal' + ' updateVisibility crashed',
+        'Board DAL updateVisibility crashed',
       )
       return null
     }
   },
 
-  softDeleteBoard: async (id: string) => {
+  softDeleteBoard: async (boardId: string) => {
     try {
       return await prisma.board.update({
         where: {
-          id,
+          id: boardId,
           deletedAt: null,
         },
         data: {
-          isDeleted: true,
           deletedAt: new Date(),
+          isDeleted: true,
         },
       })
     } catch (err) {
       logError(
-        { event: 'db', action: 'board.softDeleteBoard', meta: { id } },
+        { event: 'db', action: 'board.softDeleteBoard', meta: { boardId } },
         err,
-        'Board dal' + ' softDeleteBoard crashed',
+        'Board DAL softDeleteBoard crashed',
       )
       return null
     }
