@@ -4,7 +4,7 @@ import { logError } from '@/lib/logger/helper'
 export const userDal = {
   getByEmail: async (email: string) => {
     try {
-      return prisma.user.findUnique({
+      return await prisma.user.findUnique({
         where: { email },
       })
     } catch (err) {

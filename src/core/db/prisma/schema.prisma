@@ -214,8 +214,8 @@
     boardId String
     board   Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
 
-    userId String
-    user   User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId String?
+    user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     role RoleType @default(EDITOR)
 
@@ -224,8 +224,8 @@
 
     createdAt DateTime @default(now())
 
-    @@index([boardId])
-    @@index([userId])
+    @@index([boardId,userId])
+    @@index([inviteToken])
     @@unique([boardId, userId])
   }
 

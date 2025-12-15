@@ -5,7 +5,7 @@ import { BoardVisibility } from '@/core/db/generated/prisma/enums'
 export const boardDal = {
   createBoard: async (ownerId: string, title: string) => {
     try {
-      return prisma.board.create({
+      return await prisma.board.create({
         data: {
           title,
           ownerId,
@@ -23,7 +23,7 @@ export const boardDal = {
 
   findBoardById: async (id: string) => {
     try {
-      return prisma.board.findFirst({
+      return await prisma.board.findFirst({
         where: {
           id,
           deletedAt: null,
@@ -41,7 +41,7 @@ export const boardDal = {
 
   listBoardsForOwner: async (ownerId: string) => {
     try {
-      return prisma.board.findMany({
+      return await prisma.board.findMany({
         where: {
           ownerId,
           deletedAt: null,
@@ -62,7 +62,7 @@ export const boardDal = {
 
   updateVisibility: async (id: string, visibility: BoardVisibility) => {
     try {
-      return prisma.board.update({
+      return await prisma.board.update({
         where: { id },
         data: {
           visibility,
@@ -84,7 +84,7 @@ export const boardDal = {
 
   softDeleteBoard: async (id: string) => {
     try {
-      return prisma.board.update({
+      return await prisma.board.update({
         where: {
           id,
           deletedAt: null,
