@@ -11,7 +11,7 @@ export const userDal = {
       logError(
         { event: 'db', action: 'user.getByEmail', meta: { email } },
         err,
-        'USER dal getByEmail crashed',
+        'User dal getByEmail crashed',
       )
       return null
     }
