@@ -23,12 +23,15 @@ export const boardDal = {
 
   findById: async (boardId: string) => {
     try {
-      return await prisma.board.findFirst({
+      const board = await prisma.board.findUnique({
         where: {
           id: boardId,
           deletedAt: null,
         },
       })
+      if (!board || board.deletedAt) return null
+
+      return board
     } catch (err) {
       logError(
         { event: 'db', action: 'board.findById', meta: { boardId } },
