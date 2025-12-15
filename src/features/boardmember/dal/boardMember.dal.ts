@@ -1,16 +1,15 @@
-import { RoleType } from '@/core/db/generated/prisma/enums'
 import { prisma } from '@/core/db/src/prisma'
+import { RoleType } from '@/core/db/generated/prisma/enums'
 import { logError } from '@/lib/logger/helper'
 
 export const boardMemberDal = {
-  addMember: async (boardId: string, userId: string, role: RoleType) => {
+  createMember: async (boardId: string, userId: string, role: RoleType) => {
     try {
       return await prisma.boardMember.create({
         data: {
           boardId,
           userId,
           role,
-          inviteToken: null,
           acceptedAt: new Date(),
         },
       })
@@ -18,35 +17,30 @@ export const boardMemberDal = {
       logError(
         {
           event: 'db',
-          action: 'boardmember.addmember',
+          action: 'boardMember.createMember',
           meta: { boardId, userId, role },
         },
         err,
-        'BoardMember DAL addmember crashed',
+        'BoardMember DAL createMember crashed',
       )
       return null
     }
   },
 
-  findMemberById: async (boardId: string, userId: string) => {
+  findByBoardAndUser: async (boardId: string, userId: string) => {
     try {
       return await prisma.boardMember.findUnique({
-        where: {
-          boardId_userId: {
-            boardId,
-            userId,
-          },
-        },
+        where: { boardId_userId: { boardId, userId } },
       })
     } catch (err) {
       logError(
         {
           event: 'db',
-          action: 'boardmember.findMemberById',
+          action: 'boardMember.findByBoardAndUser',
           meta: { boardId, userId },
         },
         err,
-        'BoardMember DAL findMemberById crashed',
+        'BoardMember DAL findByBoardAndUser crashed',
       )
       return null
     }
@@ -60,7 +54,7 @@ export const boardMemberDal = {
       })
     } catch (err) {
       logError(
-        { event: 'db', action: 'boardmember.listMembers', meta: { boardId } },
+        { event: 'db', action: 'boardMember.listMembers', meta: { boardId } },
         err,
         'BoardMember DAL listMembers crashed',
       )
@@ -68,27 +62,31 @@ export const boardMemberDal = {
     }
   },
 
-  updateMemberRole: async (boardId: string, userId: string, role: RoleType) => {
+  update: async (
+    boardId: string,
+    userId: string,
+    data: { role?: RoleType },
+  ) => {
     try {
       return await prisma.boardMember.update({
         where: { boardId_userId: { boardId, userId } },
-        data: { role },
+        data,
       })
     } catch (err) {
       logError(
         {
           event: 'db',
-          action: 'boardMember.updateMemberRole',
+          action: 'boardMember.update',
           meta: { boardId, userId },
         },
         err,
-        'BoardMember DAL updateMemberRole crashed',
+        'BoardMember DAL update crashed',
       )
       return null
     }
   },
 
-  removeMember: async (boardId: string, userId: string) => {
+  remove: async (boardId: string, userId: string) => {
     try {
       return await prisma.boardMember.delete({
         where: { boardId_userId: { boardId, userId } },
@@ -97,11 +95,11 @@ export const boardMemberDal = {
       logError(
         {
           event: 'db',
-          action: 'boardMember.removeMember',
+          action: 'boardMember.remove',
           meta: { boardId, userId },
         },
         err,
-        'BoardMember DAL removeMember crashed',
+        'BoardMember DAL remove crashed',
       )
       return null
     }
@@ -112,18 +110,16 @@ export const boardMemberDal = {
       return await prisma.boardMember.create({
         data: {
           boardId,
-          inviteToken: token,
           role,
-          userId: null,
-          acceptedAt: null,
+          inviteToken: token,
         },
       })
     } catch (err) {
       logError(
         {
           event: 'db',
-          action: 'boardmember.createInvite',
-          meta: { boardId, token, role },
+          action: 'boardMember.createInvite',
+          meta: { boardId, role },
         },
         err,
         'BoardMember DAL createInvite crashed',
@@ -154,47 +150,10 @@ export const boardMemberDal = {
     }
   },
 
-  listInvites: async (boardId: string) => {
-    try {
-      return await prisma.boardMember.findMany({
-        where: {
-          boardId,
-          acceptedAt: null,
-          inviteToken: { not: null },
-        },
-        orderBy: { createdAt: 'desc' },
-      })
-    } catch (err) {
-      logError(
-        { event: 'db', action: 'boardMember.listInvites', meta: { boardId } },
-        err,
-        'BoardMember DAL listInvites crashed',
-      )
-      return null
-    }
-  },
-
-  revokeInvite: async (token: string) => {
-    try {
-      return await prisma.boardMember.delete({
-        where: { inviteToken: token },
-      })
-    } catch (err) {
-      logError(
-        { event: 'db', action: 'boardMember.revokeInvite', meta: { token } },
-        err,
-        'BoardMember DAL revokeInvite crashed',
-      )
-      return null
-    }
-  },
-
   acceptInvite: async (token: string, userId: string) => {
     try {
       return await prisma.boardMember.update({
-        where: {
-          inviteToken: token,
-        },
+        where: { inviteToken: token },
         data: {
           userId,
           inviteToken: null,
@@ -210,6 +169,21 @@ export const boardMemberDal = {
         },
         err,
         'BoardMember DAL acceptInvite crashed',
+      )
+      return null
+    }
+  },
+
+  revokeInvite: async (token: string) => {
+    try {
+      return await prisma.boardMember.delete({
+        where: { inviteToken: token },
+      })
+    } catch (err) {
+      logError(
+        { event: 'db', action: 'boardMember.revokeInvite', meta: { token } },
+        err,
+        'BoardMember DAL revokeInvite crashed',
       )
       return null
     }

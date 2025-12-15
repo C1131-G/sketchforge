@@ -2,7 +2,7 @@ import { prisma } from '@/core/db/src/prisma'
 import { logError } from '@/lib/logger/helper'
 
 export const layerDal = {
-  createLayer: async (boardId: string, name: string, zIndex: number) => {
+  create: async (boardId: string, name: string, zIndex: number) => {
     try {
       return await prisma.layer.create({
         data: {
@@ -15,33 +15,38 @@ export const layerDal = {
       logError(
         {
           event: 'db',
-          action: 'layer.createLayer',
+          action: 'layer.create',
           meta: { boardId, name, zIndex },
         },
         err,
-        'Layer DAL' + ' createLayer' + ' crashed',
+        'Layer DAL create crashed',
       )
       return null
     }
   },
 
-  listLayers: async (boardId: string) => {
+  listByBoard: async (boardId: string) => {
     try {
       return await prisma.layer.findMany({
-        where: { boardId, deletedAt: null },
-        orderBy: { zIndex: 'asc' },
+        where: {
+          boardId,
+          deletedAt: null,
+        },
+        orderBy: {
+          zIndex: 'asc',
+        },
       })
     } catch (err) {
       logError(
-        { event: 'db', action: 'layer.listLayers', meta: { boardId } },
+        { event: 'db', action: 'layer.listByBoard', meta: { boardId } },
         err,
-        'Layer DAL listLayers' + ' crashed',
+        'Layer DAL listByBoard crashed',
       )
       return null
     }
   },
 
-  findLayerById: async (layerId: string) => {
+  findById: async (layerId: string) => {
     try {
       return await prisma.layer.findFirst({
         where: {
@@ -51,91 +56,39 @@ export const layerDal = {
       })
     } catch (err) {
       logError(
-        { event: 'db', action: 'layer.findLayerById', meta: { layerId } },
+        { event: 'db', action: 'layer.findById', meta: { layerId } },
         err,
-        'Layer DAL findLayerById crashed',
+        'Layer DAL findById crashed',
       )
       return null
     }
   },
 
-  renameLayer: async (layerId: string, name: string) => {
+  update: async (
+    layerId: string,
+    data: {
+      name?: string
+      isLocked?: boolean
+      isVisible?: boolean
+      zIndex?: number
+    },
+  ) => {
     try {
       return await prisma.layer.update({
         where: { id: layerId },
-        data: { name },
+        data,
       })
     } catch (err) {
       logError(
-        { event: 'db', action: 'layer.renameLayer', meta: { layerId, name } },
+        { event: 'db', action: 'layer.update', meta: { layerId } },
         err,
-        'Layer DAL renameLayer crashed',
+        'Layer DAL update crashed',
       )
       return null
     }
   },
 
-  setLayerLock: async (layerId: string, isLocked: boolean) => {
-    try {
-      return await prisma.layer.update({
-        where: { id: layerId },
-        data: { isLocked },
-      })
-    } catch (err) {
-      logError(
-        {
-          event: 'db',
-          action: 'layer.setLayerLock',
-          meta: { layerId, isLocked },
-        },
-        err,
-        'Layer DAL setLayerLock crashed',
-      )
-      return null
-    }
-  },
-
-  setLayerVisibility: async (layerId: string, isVisible: boolean) => {
-    try {
-      return await prisma.layer.update({
-        where: { id: layerId },
-        data: { isVisible },
-      })
-    } catch (err) {
-      logError(
-        {
-          event: 'db',
-          action: 'layer.setLayerVisibility',
-          meta: { layerId, isVisible },
-        },
-        err,
-        'Layer DAL setLayerVisibility crashed',
-      )
-      return null
-    }
-  },
-
-  updateLayerZIndex: async (layerId: string, zIndex: number) => {
-    try {
-      return await prisma.layer.update({
-        where: { id: layerId },
-        data: { zIndex },
-      })
-    } catch (err) {
-      logError(
-        {
-          event: 'db',
-          action: 'layer.updateLayerZIndex',
-          meta: { layerId, zIndex },
-        },
-        err,
-        'Layer DAL updateLayerZIndex crashed',
-      )
-      return null
-    }
-  },
-
-  deleteLayer: async (layerId: string) => {
+  remove: async (layerId: string) => {
     try {
       return await prisma.layer.update({
         where: { id: layerId },
@@ -145,9 +98,9 @@ export const layerDal = {
       })
     } catch (err) {
       logError(
-        { event: 'db', action: 'layer.deleteLayer', meta: { layerId } },
+        { event: 'db', action: 'layer.remove', meta: { layerId } },
         err,
-        'Layer DAL deleteLayer crashed',
+        'Layer DAL remove crashed',
       )
       return null
     }
