@@ -8,10 +8,7 @@
     "build": "next build",
     "start": "next start",
     "prepare": "husky",
-    "test": "vitest",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "test": "vitest"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -49,6 +46,7 @@
     "lint-staged": "^16.2.7",
     "prettier": "^3.7.4",
     "prisma": "^7.1.0",
+    "prisma-zod-generator": "^2.1.2",
     "tailwindcss": "^4",
     "typescript": "^5",
     "typescript-eslint": "^8.49.0",

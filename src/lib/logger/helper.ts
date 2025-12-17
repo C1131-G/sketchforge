@@ -1,22 +1,25 @@
 import { logger } from '@/lib/logger/logger'
-import { AppLog } from '@/lib/logger/logger.types'
+import { LogContext } from '@/lib/types/logger.types'
 
-export function logInfo(log: Omit<AppLog, 'status'>, message: string) {
-  logger.info({ ...log, status: 'info' }, message)
-}
+export const withLogContext = (ctx: LogContext) => ({
+  info(message: string) {
+    logger.info(ctx, message)
+  },
 
-export function logSuccess(log: Omit<AppLog, 'status'>, message: string) {
-  logger.info({ ...log, status: 'success' }, message)
-}
+  warn(message: string) {
+    logger.warn(ctx, message)
+  },
 
-export function logFailed(log: Omit<AppLog, 'status'>, message: string) {
-  logger.info({ ...log, status: 'failed' }, message)
-}
-
-export function logError(
-  log: Omit<AppLog, 'status'>,
-  err: unknown,
-  message: string,
-) {
-  logger.error({ ...log, status: 'failed', err }, message)
-}
+  error(err: unknown, message: string) {
+    logger.error(
+      {
+        ...ctx,
+        err:
+          err instanceof Error
+            ? { message: err.message, stack: err.stack }
+            : err,
+      },
+      message,
+    )
+  },
+})
