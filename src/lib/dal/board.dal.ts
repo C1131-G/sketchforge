@@ -77,10 +77,7 @@ export const boardDal = {
             ownerId: data.ownerId,
           },
         },
-        data: {
-          ...(data.title !== undefined && { title: data.title }),
-          ...(data.visibility !== undefined && { visibility: data.visibility }),
-        },
+        data,
       })
     } catch (err) {
       log.error(err, 'Board DAL:update failed')

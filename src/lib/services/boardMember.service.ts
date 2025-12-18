@@ -69,7 +69,7 @@ export const boardMemberService = {
     return boardMemberDal.update({
       boardId,
       targetUserId,
-      role: role ?? RoleType.EDITOR,
+      role: role,
     })
   },
 
@@ -101,7 +101,7 @@ export const boardMemberService = {
     return boardMemberDal.createInvite({
       boardId,
       token,
-      role: role ?? RoleType.EDITOR,
+      role: role ?? RoleType.VIEWER,
     })
   },
 

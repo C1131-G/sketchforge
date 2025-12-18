@@ -18,15 +18,11 @@ export const BoardMemberListOfBoardsSchema = z.object({
   boardId: BoardIdSchema,
 })
 
-export const BoardMemberUpdateSchema = z
-  .object({
-    boardId: BoardIdSchema,
-    targetUserId: UserIdSchema,
-    role: RoleSchema.optional(),
-  })
-  .refine((data) => data.role !== undefined, {
-    message: 'At least one field must be updated',
-  })
+export const BoardMemberUpdateSchema = z.object({
+  boardId: BoardIdSchema,
+  targetUserId: UserIdSchema,
+  role: RoleSchema,
+})
 
 export const BoardMemberRemoveSchema = z.object({
   boardId: BoardIdSchema,

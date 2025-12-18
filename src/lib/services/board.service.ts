@@ -47,11 +47,14 @@ export const boardService = {
     if (board.ownerId !== userId)
       throw ERR.UNAUTHORIZED('Only owner can update board')
 
+    const updateData = {
+      ...(title !== undefined && { title }),
+      ...(visibility !== undefined && { visibility }),
+    }
     return boardDal.update({
       boardId,
       ownerId: userId,
-      ...(title !== undefined && { title }),
-      ...(visibility !== undefined && { visibility }),
+      ...updateData,
     })
   },
 

@@ -1,15 +1,10 @@
 import { z } from 'zod'
 import { BoardVisibility } from '@/prisma/generated/prisma/enums'
 import { BoardIdSchema } from '@/lib/schemas/common/id.schema'
-
-const BoardTitleSchema = z
-  .string()
-  .trim()
-  .min(1, 'Title is required')
-  .max(255, 'Title is too long')
+import { TitleSchema } from '@/lib/schemas/common/name.schema'
 
 export const BoardCreateSchema = z.object({
-  title: BoardTitleSchema,
+  title: TitleSchema,
 })
 
 export const BoardFindByIdSchema = z.object({
@@ -19,7 +14,7 @@ export const BoardFindByIdSchema = z.object({
 export const BoardUpdateSchema = z
   .object({
     boardId: BoardIdSchema,
-    title: BoardTitleSchema.optional(),
+    title: TitleSchema.optional(),
     visibility: z.enum(BoardVisibility).optional(),
   })
   .refine((data) => data.title !== undefined || data.visibility !== undefined, {
