@@ -1,66 +1,85 @@
-// import { prisma } from '@/lib/prisma/prisma'
-// import { logError } from '@/lib/logger/helper'
-// import { Prisma } from '@/prisma/generated/prisma/client'
-//
-// export const strokeDal = {
-//   create: async (
-//     boardId: string,
-//     layerId: string,
-//     ownerId: string,
-//     pointsBlob: Prisma.Bytes,
-//     penPropsJson: Prisma.InputJsonValue,
-//   ) => {
-//     try {
-//       return await prisma.stroke.create({
-//         data: {
-//           boardId,
-//           layerId,
-//           ownerId,
-//           pointsBlob,
-//           penPropsJson,
-//         },
-//       })
-//     } catch (err) {
-//       logError(
-//         {
-//           event: 'db',
-//           action: 'stroke.create',
-//           meta: { boardId, layerId, ownerId },
-//         },
-//         err,
-//         'Stroke DAL create crashed',
-//       )
-//       return null
-//     }
-//   },
-//
-//   listByBoard: async (boardId: string) => {
-//     try {
-//       return await prisma.stroke.findMany({
-//         where: { boardId },
-//       })
-//     } catch (err) {
-//       logError(
-//         { event: 'db', action: 'stroke.listByBoard', meta: { boardId } },
-//         err,
-//         'Stroke DAL listByBoard crashed',
-//       )
-//       return null
-//     }
-//   },
-//
-//   remove: async (strokeId: string) => {
-//     try {
-//       return await prisma.stroke.delete({
-//         where: { id: strokeId },
-//       })
-//     } catch (err) {
-//       logError(
-//         { event: 'db', action: 'stroke.remove', meta: { strokeId } },
-//         err,
-//         'Stroke DAL remove crashed',
-//       )
-//       return null
-//     }
-//   },
-// }
+import { prisma } from '@/lib/prisma/prisma'
+import { Prisma } from '@/prisma/generated/prisma/client'
+import { withLogContext } from '@/lib/logger/helper'
+import { ERR } from '@/lib/errors/error.map'
+
+export const strokeDal = {
+  async create(data: {
+    boardId: string
+    layerId: string
+    ownerId: string
+    pointsBlob: Prisma.Bytes
+    penPropsJson: Prisma.InputJsonValue
+  }) {
+    const log = withLogContext({
+      event: 'db',
+      action: 'stroke.create',
+      meta: { boardId: data.boardId },
+    })
+
+    try {
+      return await prisma.stroke.create({
+        data,
+      })
+    } catch (err) {
+      log.error(err, 'Stroke DAL: create failed')
+      throw ERR.INTERNAL('Failed to create stroke')
+    }
+  },
+
+  async findById(data: { strokeId: string }) {
+    const log = withLogContext({
+      event: 'db',
+      action: 'stroke.findById',
+      meta: { strokeId: data.strokeId },
+    })
+
+    try {
+      return await prisma.stroke.findUnique({
+        where: { id: data.strokeId },
+      })
+    } catch (err) {
+      log.error(err, 'Stroke DAL: findById failed')
+      throw ERR.INTERNAL('Failed to find stroke')
+    }
+  },
+
+  async listByBoard(data: { boardId: string }) {
+    const log = withLogContext({
+      event: 'db',
+      action: 'stroke.listByBoard',
+      meta: { boardId: data.boardId },
+    })
+
+    try {
+      return await prisma.stroke.findMany({
+        where: {
+          boardId: data.boardId,
+          deletedAt: null,
+        },
+        orderBy: { createdAt: 'asc' },
+      })
+    } catch (err) {
+      log.error(err, 'Stroke DAL: listByBoard failed')
+      throw ERR.INTERNAL('Failed to load strokes')
+    }
+  },
+
+  async remove(data: { strokeId: string }) {
+    const log = withLogContext({
+      event: 'db',
+      action: 'stroke.remove',
+      meta: { strokeId: data.strokeId },
+    })
+
+    try {
+      return await prisma.stroke.update({
+        where: { id: data.strokeId },
+        data: { deletedAt: new Date() },
+      })
+    } catch (err) {
+      log.error(err, 'Stroke DAL: remove failed')
+      throw ERR.INTERNAL('Failed to remove stroke')
+    }
+  },
+}
