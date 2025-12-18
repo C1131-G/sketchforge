@@ -22,25 +22,28 @@ export const strokeDal = {
         data,
       })
     } catch (err) {
-      log.error(err, 'Stroke DAL: create failed')
+      log.error(err, 'Stroke create failed')
       throw ERR.INTERNAL('Failed to create stroke')
     }
   },
 
-  async findById(data: { strokeId: string }) {
+  async findActiveById(data: { strokeId: string }) {
     const log = withLogContext({
       event: 'db',
-      action: 'stroke.findById',
+      action: 'stroke.findActiveById',
       meta: { strokeId: data.strokeId },
     })
 
     try {
-      return await prisma.stroke.findUnique({
-        where: { id: data.strokeId },
+      return await prisma.stroke.findFirst({
+        where: {
+          id: data.strokeId,
+          deletedAt: null,
+        },
       })
     } catch (err) {
-      log.error(err, 'Stroke DAL: findById failed')
-      throw ERR.INTERNAL('Failed to find stroke')
+      log.error(err, 'Stroke find failed')
+      throw ERR.INTERNAL('Failed to fetch stroke')
     }
   },
 
@@ -60,15 +63,15 @@ export const strokeDal = {
         orderBy: { createdAt: 'asc' },
       })
     } catch (err) {
-      log.error(err, 'Stroke DAL: listByBoard failed')
+      log.error(err, 'Stroke list failed')
       throw ERR.INTERNAL('Failed to load strokes')
     }
   },
 
-  async remove(data: { strokeId: string }) {
+  async softDelete(data: { strokeId: string }) {
     const log = withLogContext({
       event: 'db',
-      action: 'stroke.remove',
+      action: 'stroke.softDelete',
       meta: { strokeId: data.strokeId },
     })
 
@@ -78,8 +81,8 @@ export const strokeDal = {
         data: { deletedAt: new Date() },
       })
     } catch (err) {
-      log.error(err, 'Stroke DAL: remove failed')
-      throw ERR.INTERNAL('Failed to remove stroke')
+      log.error(err, 'Stroke delete failed')
+      throw ERR.INTERNAL('Failed to delete stroke')
     }
   },
 }

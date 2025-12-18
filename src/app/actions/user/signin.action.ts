@@ -4,12 +4,12 @@ import { authService } from '@/lib/services/auth.service'
 import { withLogContext } from '@/lib/logger/helper'
 import { AppError } from '@/lib/errors/AppError'
 
-export async function signIn(fromData: FormData) {
+export async function signIn(formData: FormData) {
   const log = withLogContext({ event: 'auth', action: 'signin' })
   try {
     const data = await authService.signIn({
-      email: fromData.get('email'),
-      password: fromData.get('password'),
+      email: formData.get('email'),
+      password: formData.get('password'),
     })
 
     return { success: true, data }
@@ -18,7 +18,7 @@ export async function signIn(fromData: FormData) {
       return { success: false, error: err.message }
     }
 
-    log.error(err, 'SERVER ACTION: Signin server action crashed')
+    log.error(err, 'Signin server action crashed')
 
     return { success: false, error: 'Something went wrong' }
   }

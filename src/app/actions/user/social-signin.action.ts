@@ -20,7 +20,7 @@ export async function signInSocial(provider: SocialProviderType) {
       return { success: false, error: err.message }
     }
 
-    log.error(err, 'SERVER ACTION: Social signin server action crashed')
+    log.error(err, 'Social signin server action crashed')
 
     return { success: false, error: 'Something went wrong' }
   }

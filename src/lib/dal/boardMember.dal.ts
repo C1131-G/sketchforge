@@ -25,7 +25,7 @@ export const boardMemberDal = {
         },
       })
     } catch (err) {
-      log.error(err, 'BoardMember DAL: create failed')
+      log.error(err, 'BoardMember create failed')
       throw ERR.INTERNAL('Failed to create board member')
     }
   },
@@ -33,7 +33,7 @@ export const boardMemberDal = {
   async findById(data: { boardId: string; userId: string }) {
     const log = withLogContext({
       event: 'db',
-      action: 'boardMember.findByBoard',
+      action: 'boardMember.findById',
       meta: { boardId: data.boardId },
     })
 
@@ -47,8 +47,8 @@ export const boardMemberDal = {
         },
       })
     } catch (err) {
-      log.error(err, 'BoardMember DAL: findById failed')
-      throw ERR.INTERNAL('Failed to find the board member')
+      log.error(err, 'BoardMember findById failed')
+      throw ERR.INTERNAL('Failed to find board member')
     }
   },
 
@@ -68,7 +68,7 @@ export const boardMemberDal = {
         orderBy: { createdAt: 'desc' },
       })
     } catch (err) {
-      log.error(err, 'BoardMember DAL: listMembers failed')
+      log.error(err, 'BoardMember listMembers failed')
       throw ERR.INTERNAL('Failed to list board members')
     }
   },
@@ -97,7 +97,7 @@ export const boardMemberDal = {
         },
       })
     } catch (err) {
-      log.error(err, 'BoardMember DAL: update failed')
+      log.error(err, 'BoardMember update failed')
       throw ERR.INTERNAL('Failed to update board member')
     }
   },
@@ -119,7 +119,7 @@ export const boardMemberDal = {
         },
       })
     } catch (err) {
-      log.error(err, 'BoardMember DAL: remove failed')
+      log.error(err, 'BoardMember remove failed')
       throw ERR.INTERNAL('Failed to remove board member')
     }
   },
@@ -140,7 +140,7 @@ export const boardMemberDal = {
         },
       })
     } catch (err) {
-      log.error(err, 'BoardMember DAL: createInvite failed')
+      log.error(err, 'BoardMember createInvite failed')
       throw ERR.INTERNAL('Failed to create invite')
     }
   },
@@ -152,14 +152,14 @@ export const boardMemberDal = {
     })
 
     try {
-      return await prisma.boardMember.findUnique({
+      return await prisma.boardMember.findFirst({
         where: {
           inviteToken: data.token,
           acceptedAt: null,
         },
       })
     } catch (err) {
-      log.error(err, 'BoardMember DAL: findInviteByToken failed')
+      log.error(err, 'BoardMember findInviteByToken failed')
       throw ERR.INTERNAL('Failed to fetch invite')
     }
   },
@@ -172,7 +172,10 @@ export const boardMemberDal = {
 
     try {
       return await prisma.boardMember.updateMany({
-        where: { inviteToken: data.token, acceptedAt: null },
+        where: {
+          inviteToken: data.token,
+          acceptedAt: null,
+        },
         data: {
           userId: data.userId,
           inviteToken: null,
@@ -180,7 +183,7 @@ export const boardMemberDal = {
         },
       })
     } catch (err) {
-      log.error(err, 'BoardMember DAL: acceptInvite failed')
+      log.error(err, 'BoardMember acceptInvite failed')
       throw ERR.INTERNAL('Failed to accept invite')
     }
   },
@@ -196,7 +199,7 @@ export const boardMemberDal = {
         where: { inviteToken: data.token },
       })
     } catch (err) {
-      log.error(err, 'BoardMember DAL: revokeInvite failed')
+      log.error(err, 'BoardMember revokeInvite failed')
       throw ERR.INTERNAL('Failed to revoke invite')
     }
   },

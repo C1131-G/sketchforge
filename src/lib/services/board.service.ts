@@ -1,12 +1,13 @@
 import { requireSession } from '@/lib/auth/require-session'
 import { ERR } from '@/lib/errors/error.map'
+import { boardDal } from '@/lib/dal/board.dal'
 import {
   BoardCreateSchema,
   BoardFindByIdSchema,
-  BoardRemoveSchema,
   BoardUpdateSchema,
+  BoardRemoveSchema,
 } from '@/lib/schemas/board.schema'
-import { boardDal } from '@/lib/dal/board.dal'
+import { requireBoard, requireOwner } from '@/lib/services/permission.service'
 
 export const boardService = {
   async create(input: unknown) {
@@ -14,46 +15,39 @@ export const boardService = {
     const { title } = BoardCreateSchema.parse(input)
 
     return boardDal.create({
-      title,
       ownerId: userId,
+      title,
     })
   },
+
   async findById(input: unknown) {
     const { boardId } = BoardFindByIdSchema.parse(input)
-    const board = await boardDal.findById({ boardId })
+    const board = await requireBoard(boardId)
 
-    if (!board) throw ERR.NOT_FOUND('Board not found')
     if (board.visibility !== 'PRIVATE') return board
 
     const { id: userId } = await requireSession()
-
     if (board.ownerId !== userId) throw ERR.NOT_FOUND('Board not found')
-
     return board
   },
 
   async listOwnerBoards() {
     const { id: userId } = await requireSession()
-    return boardDal.listOwnerBoards({ ownerId: userId })
+    return boardDal.listByOwner({ ownerId: userId })
   },
 
   async update(input: unknown) {
     const { id: userId } = await requireSession()
-    const { boardId, visibility, title } = BoardUpdateSchema.parse(input)
+    const { boardId, title, visibility } = BoardUpdateSchema.parse(input)
 
-    const board = await boardDal.findById({ boardId })
-
-    if (!board) throw ERR.NOT_FOUND('Board not found')
-    if (board.ownerId !== userId)
-      throw ERR.UNAUTHORIZED('Only owner can update board')
-
+    await requireOwner(boardId, userId)
     const updateData = {
       ...(title !== undefined && { title }),
       ...(visibility !== undefined && { visibility }),
     }
+
     return boardDal.update({
       boardId,
-      ownerId: userId,
       ...updateData,
     })
   },
@@ -62,15 +56,7 @@ export const boardService = {
     const { id: userId } = await requireSession()
     const { boardId } = BoardRemoveSchema.parse(input)
 
-    const board = await boardDal.findById({ boardId })
-
-    if (!board) throw ERR.NOT_FOUND('Board not found')
-    if (board.ownerId !== userId)
-      throw ERR.UNAUTHORIZED('Only owner can delete board')
-
-    return boardDal.remove({
-      boardId,
-      ownerId: userId,
-    })
+    await requireOwner(boardId, userId)
+    return boardDal.softDelete({ boardId })
   },
 }

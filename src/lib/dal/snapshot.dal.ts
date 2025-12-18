@@ -22,7 +22,7 @@ export const snapshotDal = {
         data,
       })
     } catch (err) {
-      log.error(err, 'Snapshot DAL: create failed')
+      log.error(err, 'Snapshot create failed')
       throw ERR.INTERNAL('Failed to create snapshot')
     }
   },
@@ -40,7 +40,7 @@ export const snapshotDal = {
         orderBy: { createdAt: 'desc' },
       })
     } catch (err) {
-      log.error(err, 'Snapshot DAL: listByBoard failed')
+      log.error(err, 'Snapshot list failed')
       throw ERR.INTERNAL('Failed to list snapshots')
     }
   },
@@ -57,8 +57,8 @@ export const snapshotDal = {
         where: { id: data.snapshotId },
       })
     } catch (err) {
-      log.error(err, 'Snapshot DAL: findById failed')
-      throw ERR.INTERNAL('Failed to find snapshot')
+      log.error(err, 'Snapshot find failed')
+      throw ERR.INTERNAL('Failed to fetch snapshot')
     }
   },
 }

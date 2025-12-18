@@ -6,29 +6,19 @@ import {
   LayerRemoveSchema,
   LayerUpdateSchema,
 } from '@/lib/schemas/layer.schema'
-import { boardDal } from '@/lib/dal/board.dal'
-import { ERR } from '@/lib/errors/error.map'
-import { boardMemberDal } from '@/lib/dal/boardMember.dal'
-import { RoleType } from '@/prisma/generated/prisma/enums'
 import { layerDal } from '@/lib/dal/layer.dal'
+import { ERR } from '@/lib/errors/error.map'
+import {
+  requireBoardAccess,
+  requireEditorAccess,
+} from '@/lib/services/permission.service'
 
-export const LayerService = {
+export const layerService = {
   async create(input: unknown) {
     const { id: userId } = await requireSession()
     const { boardId, name, zIndex } = LayerCreateSchema.parse(input)
 
-    const board = await boardDal.findById({ boardId })
-    if (!board) throw ERR.NOT_FOUND('Board not found')
-
-    if (board.ownerId !== userId) {
-      const member = await boardMemberDal.findById({
-        boardId,
-        userId,
-      })
-      if (!member) throw ERR.NOT_FOUND('Board not found')
-      if (member.role !== RoleType.EDITOR)
-        throw ERR.UNAUTHORIZED('Only owner or editor can create layers')
-    }
+    await requireEditorAccess(boardId, userId)
 
     return layerDal.create({
       boardId,
@@ -41,38 +31,18 @@ export const LayerService = {
     const { id: userId } = await requireSession()
     const { boardId } = LayerListByBoardSchema.parse(input)
 
-    const board = await boardDal.findById({ boardId })
-    if (!board) throw ERR.NOT_FOUND('Board not found')
-
-    if (board.ownerId !== userId) {
-      const member = await boardMemberDal.findById({
-        boardId,
-        userId,
-      })
-      if (!member) throw ERR.NOT_FOUND('Board not found')
-    }
-    return await layerDal.listByBoard({ boardId })
+    await requireBoardAccess(boardId, userId)
+    return layerDal.listByBoard({ boardId })
   },
 
   async findById(input: unknown) {
     const { id: userId } = await requireSession()
     const { layerId } = LayerFindByIdSchema.parse(input)
 
-    const layer = await layerDal.findById({ layerId })
+    const layer = await layerDal.findActiveById({ layerId })
     if (!layer) throw ERR.NOT_FOUND('Layer not found')
 
-    const board = await boardDal.findById({ boardId: layer.boardId })
-    if (!board) throw ERR.NOT_FOUND('Board not found')
-
-    if (board.ownerId !== userId) {
-      const member = await boardMemberDal.findById({
-        boardId: board.id,
-        userId,
-      })
-
-      if (!member) throw ERR.NOT_FOUND('Board not found')
-    }
-
+    await requireBoardAccess(layer.boardId, userId)
     return layer
   },
 
@@ -81,21 +51,10 @@ export const LayerService = {
     const { layerId, name, isLocked, isVisible, zIndex } =
       LayerUpdateSchema.parse(input)
 
-    const layer = await layerDal.findById({ layerId })
+    const layer = await layerDal.findActiveById({ layerId })
     if (!layer) throw ERR.NOT_FOUND('Layer not found')
 
-    const board = await boardDal.findById({ boardId: layer.boardId })
-    if (!board) throw ERR.NOT_FOUND('Board not found')
-
-    if (board.ownerId !== userId) {
-      const member = await boardMemberDal.findById({
-        boardId: board.id,
-        userId,
-      })
-      if (!member) throw ERR.NOT_FOUND('Board not found')
-      if (member.role === RoleType.VIEWER)
-        throw ERR.UNAUTHORIZED('Only owner or editor can update layers')
-    }
+    await requireEditorAccess(layer.boardId, userId)
 
     const updateData = {
       ...(name !== undefined && { name }),
@@ -104,7 +63,7 @@ export const LayerService = {
       ...(zIndex !== undefined && { zIndex }),
     }
 
-    await layerDal.update({
+    return layerDal.update({
       layerId,
       ...updateData,
     })
@@ -114,22 +73,10 @@ export const LayerService = {
     const { id: userId } = await requireSession()
     const { layerId } = LayerRemoveSchema.parse(input)
 
-    const layer = await layerDal.findById({ layerId })
+    const layer = await layerDal.findActiveById({ layerId })
     if (!layer) throw ERR.NOT_FOUND('Layer not found')
 
-    const board = await boardDal.findById({ boardId: layer.boardId })
-    if (!board) throw ERR.NOT_FOUND('Board not found')
-
-    if (board.ownerId !== userId) {
-      const member = await boardMemberDal.findById({
-        boardId: board.id,
-        userId,
-      })
-      if (!member) throw ERR.NOT_FOUND('Board not found')
-      if (member.role === RoleType.VIEWER)
-        throw ERR.UNAUTHORIZED('Only owner or editor can create layers')
-    }
-
-    return await layerDal.remove({ layerId })
+    await requireEditorAccess(layer.boardId, userId)
+    return layerDal.softDelete({ layerId })
   },
 }

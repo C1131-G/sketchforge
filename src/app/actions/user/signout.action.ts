@@ -15,7 +15,7 @@ export async function signOut() {
       return { success: false, error: err.message }
     }
 
-    log.error(err, 'SERVER ACTION: Signout server action crashed')
+    log.error(err, 'Signout server action crashed')
     return { success: false, error: 'Something went wrong' }
   }
 }

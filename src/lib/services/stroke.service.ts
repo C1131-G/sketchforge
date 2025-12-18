@@ -1,16 +1,17 @@
 import { requireSession } from '@/lib/auth/require-session'
-import { ERR } from '@/lib/errors/error.map'
-import { boardDal } from '@/lib/dal/board.dal'
-import { layerDal } from '@/lib/dal/layer.dal'
-import { boardMemberDal } from '@/lib/dal/boardMember.dal'
-import { RoleType } from '@/prisma/generated/prisma/enums'
-import { strokeDal } from '@/lib/dal/stroke.dal'
 import {
   StrokeCreateSchema,
   StrokeFindByIdSchema,
   StrokeListByBoardSchema,
   StrokeRemoveSchema,
 } from '@/lib/schemas/stroke.schema'
+import { strokeDal } from '@/lib/dal/stroke.dal'
+import { layerDal } from '@/lib/dal/layer.dal'
+import { ERR } from '@/lib/errors/error.map'
+import {
+  requireBoardAccess,
+  requireEditorAccess,
+} from '@/lib/services/permission.service'
 
 export const strokeService = {
   async create(input: unknown) {
@@ -18,20 +19,11 @@ export const strokeService = {
     const { boardId, layerId, pointsBlob, penPropsJson } =
       StrokeCreateSchema.parse(input)
 
-    const board = await boardDal.findById({ boardId })
-    if (!board) throw ERR.NOT_FOUND('Board not found')
+    await requireEditorAccess(boardId, userId)
 
-    const layer = await layerDal.findById({ layerId })
+    const layer = await layerDal.findActiveById({ layerId })
     if (!layer || layer.boardId !== boardId) {
       throw ERR.NOT_FOUND('Layer not found')
-    }
-
-    if (board.ownerId !== userId) {
-      const member = await boardMemberDal.findById({ boardId, userId })
-      if (!member) throw ERR.NOT_FOUND('Board not found')
-      if (member.role === RoleType.VIEWER) {
-        throw ERR.UNAUTHORIZED('Only owner or editor can draw')
-      }
     }
 
     return strokeDal.create({
@@ -47,20 +39,10 @@ export const strokeService = {
     const { id: userId } = await requireSession()
     const { strokeId } = StrokeFindByIdSchema.parse(input)
 
-    const stroke = await strokeDal.findById({ strokeId })
+    const stroke = await strokeDal.findActiveById({ strokeId })
     if (!stroke) throw ERR.NOT_FOUND('Stroke not found')
 
-    const board = await boardDal.findById({ boardId: stroke.boardId })
-    if (!board) throw ERR.NOT_FOUND('Board not found')
-
-    if (board.ownerId !== userId) {
-      const member = await boardMemberDal.findById({
-        boardId: board.id,
-        userId,
-      })
-      if (!member) throw ERR.NOT_FOUND('Board not found')
-    }
-
+    await requireBoardAccess(stroke.boardId, userId)
     return stroke
   },
 
@@ -68,14 +50,7 @@ export const strokeService = {
     const { id: userId } = await requireSession()
     const { boardId } = StrokeListByBoardSchema.parse(input)
 
-    const board = await boardDal.findById({ boardId })
-    if (!board) throw ERR.NOT_FOUND('Board not found')
-
-    if (board.ownerId !== userId) {
-      const member = await boardMemberDal.findById({ boardId, userId })
-      if (!member) throw ERR.NOT_FOUND('Board not found')
-    }
-
+    await requireBoardAccess(boardId, userId)
     return strokeDal.listByBoard({ boardId })
   },
 
@@ -83,23 +58,10 @@ export const strokeService = {
     const { id: userId } = await requireSession()
     const { strokeId } = StrokeRemoveSchema.parse(input)
 
-    const stroke = await strokeDal.findById({ strokeId })
+    const stroke = await strokeDal.findActiveById({ strokeId })
     if (!stroke) throw ERR.NOT_FOUND('Stroke not found')
 
-    const board = await boardDal.findById({ boardId: stroke.boardId })
-    if (!board) throw ERR.NOT_FOUND('Board not found')
-
-    if (board.ownerId !== userId) {
-      const member = await boardMemberDal.findById({
-        boardId: board.id,
-        userId,
-      })
-      if (!member) throw ERR.NOT_FOUND('Board not found')
-      if (member.role === RoleType.VIEWER) {
-        throw ERR.UNAUTHORIZED('Only owner or editor can remove strokes')
-      }
-    }
-
-    return strokeDal.remove({ strokeId })
+    await requireEditorAccess(stroke.boardId, userId)
+    return strokeDal.softDelete({ strokeId })
   },
 }

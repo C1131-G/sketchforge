@@ -10,18 +10,18 @@ import {
   RevokeInviteSchema,
   BoardMemberListOfBoardsSchema,
 } from '@/lib/schemas/boardMember.schema'
-import { boardDal } from '@/lib/dal/board.dal'
 import { RoleType } from '@/prisma/generated/prisma/enums'
+import {
+  requireBoardAccess,
+  requireOwner,
+} from '@/lib/services/permission.service'
 
 export const boardMemberService = {
   async create(input: unknown) {
     const { id: userId } = await requireSession()
     const { boardId, role, targetUserId } = BoardMemberCreateSchema.parse(input)
 
-    const board = await boardDal.findById({ boardId })
-    if (!board) throw ERR.NOT_FOUND('Board not found')
-    if (board.ownerId !== userId)
-      throw ERR.UNAUTHORIZED('Only owner can add members')
+    await requireOwner(boardId, userId)
 
     const existing = await boardMemberDal.findById({
       boardId,
@@ -29,9 +29,9 @@ export const boardMemberService = {
     })
     if (existing) throw ERR.CONFLICT('User already a member')
 
-    return await boardMemberDal.create({
-      targetUserId,
+    return boardMemberDal.create({
       boardId,
+      targetUserId,
       role,
     })
   },
@@ -40,18 +40,7 @@ export const boardMemberService = {
     const { id: userId } = await requireSession()
     const { boardId } = BoardMemberListOfBoardsSchema.parse(input)
 
-    const board = await boardDal.findById({ boardId })
-    if (!board) throw ERR.NOT_FOUND('Board not found')
-
-    if (board.ownerId !== userId) {
-      const member = await boardMemberDal.findById({
-        userId,
-        boardId,
-      })
-
-      if (!member) throw ERR.UNAUTHORIZED()
-    }
-
+    await requireBoardAccess(boardId, userId)
     return boardMemberDal.listMembers({ boardId })
   },
 
@@ -59,17 +48,16 @@ export const boardMemberService = {
     const { id: userId } = await requireSession()
     const { boardId, role, targetUserId } = BoardMemberUpdateSchema.parse(input)
 
-    const board = await boardDal.findById({ boardId })
-    if (!board) throw ERR.NOT_FOUND('Board not found')
-    if (board.ownerId !== userId)
-      throw ERR.UNAUTHORIZED('Only owner can update roles')
-    if (targetUserId === board.ownerId)
+    const board = await requireOwner(boardId, userId)
+
+    if (targetUserId === board.ownerId) {
       throw ERR.BAD_REQUEST('Cannot change owner role')
+    }
 
     return boardMemberDal.update({
       boardId,
       targetUserId,
-      role: role,
+      role,
     })
   },
 
@@ -77,13 +65,13 @@ export const boardMemberService = {
     const { id: userId } = await requireSession()
     const { boardId, targetUserId } = BoardMemberRemoveSchema.parse(input)
 
-    const board = await boardDal.findById({ boardId })
-    if (!board) throw ERR.NOT_FOUND('Board not found')
-    if (board.ownerId !== userId)
-      throw ERR.UNAUTHORIZED('Only owner can remove members')
-    if (targetUserId === board.ownerId)
+    const board = await requireOwner(boardId, userId)
+
+    if (targetUserId === board.ownerId) {
       throw ERR.BAD_REQUEST('Cannot remove board owner')
-    return await boardMemberDal.remove({
+    }
+
+    return boardMemberDal.remove({
       boardId,
       targetUserId,
     })
@@ -91,12 +79,9 @@ export const boardMemberService = {
 
   async createInvite(input: unknown) {
     const { id: userId } = await requireSession()
-    const { boardId, role, token } = CreateInviteSchema.parse(input)
+    const { boardId, token, role } = CreateInviteSchema.parse(input)
 
-    const board = await boardDal.findById({ boardId })
-    if (!board) throw ERR.NOT_FOUND('Board not found')
-    if (board.ownerId !== userId)
-      throw ERR.UNAUTHORIZED('Only owner can invite')
+    await requireOwner(boardId, userId)
 
     return boardMemberDal.createInvite({
       boardId,
@@ -118,21 +103,23 @@ export const boardMemberService = {
     })
     if (existing) throw ERR.CONFLICT('Already a member')
 
-    return boardMemberDal.acceptInvite({
+    const result = await boardMemberDal.acceptInvite({
       token,
       userId,
     })
+
+    if (result.count !== 1) {
+      throw ERR.INTERNAL('Invite acceptance failed')
+    }
+
+    return result
   },
 
   async revokeInvite(input: unknown) {
     const { id: userId } = await requireSession()
     const { boardId, token } = RevokeInviteSchema.parse(input)
 
-    const board = await boardDal.findById({ boardId })
-    if (!board) throw ERR.NOT_FOUND('Board not found')
-    if (board.ownerId !== userId)
-      throw ERR.UNAUTHORIZED('Only owner can revoke invites')
-
+    await requireOwner(boardId, userId)
     return boardMemberDal.revokeInvite({ token })
   },
 }

@@ -19,7 +19,7 @@ export async function signUp(formData: FormData) {
       return { success: false, error: err.message }
     }
 
-    log.error(err, 'SERVER ACTION: Signup server action crashed')
+    log.error(err, 'Signup server action crashed')
     return { success: false, error: 'Something went wrong' }
   }
 }

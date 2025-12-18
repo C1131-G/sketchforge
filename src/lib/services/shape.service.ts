@@ -6,12 +6,13 @@ import {
   ShapeRemoveSchema,
   ShapeUpdateSchema,
 } from '@/lib/schemas/shape.schema'
-import { boardDal } from '@/lib/dal/board.dal'
-import { ERR } from '@/lib/errors/error.map'
-import { layerDal } from '@/lib/dal/layer.dal'
-import { boardMemberDal } from '@/lib/dal/boardMember.dal'
-import { RoleType } from '@/prisma/generated/prisma/enums'
 import { shapeDal } from '@/lib/dal/shape.dal'
+import { layerDal } from '@/lib/dal/layer.dal'
+import { ERR } from '@/lib/errors/error.map'
+import {
+  requireBoardAccess,
+  requireEditorAccess,
+} from '@/lib/services/permission.service'
 
 export const shapeService = {
   async create(input: unknown) {
@@ -19,19 +20,11 @@ export const shapeService = {
     const { boardId, layerId, type, dataJson, styleJson, zIndex } =
       ShapeCreateSchema.parse(input)
 
-    const board = await boardDal.findById({ boardId })
-    if (!board) throw ERR.NOT_FOUND('Board not found')
+    await requireEditorAccess(boardId, userId)
 
-    const layer = await layerDal.findById({ layerId })
-    if (!layer || layer.boardId !== boardId)
+    const layer = await layerDal.findActiveById({ layerId })
+    if (!layer || layer.boardId !== boardId) {
       throw ERR.NOT_FOUND('Layer not found')
-
-    if (board.ownerId !== userId) {
-      const member = await boardMemberDal.findById({ boardId, userId })
-      if (!member) throw ERR.NOT_FOUND('Board not found')
-      if (member.role === RoleType.VIEWER) {
-        throw ERR.UNAUTHORIZED('Only owner or editor can create shapes')
-      }
     }
 
     return shapeDal.create({
@@ -49,20 +42,10 @@ export const shapeService = {
     const { id: userId } = await requireSession()
     const { shapeId } = ShapeFindByIdSchema.parse(input)
 
-    const shape = await shapeDal.findById({ shapeId })
+    const shape = await shapeDal.findActiveById({ shapeId })
     if (!shape) throw ERR.NOT_FOUND('Shape not found')
 
-    const board = await boardDal.findById({ boardId: shape.boardId })
-    if (!board) throw ERR.NOT_FOUND('Board not found')
-
-    if (board.ownerId !== userId) {
-      const member = await boardMemberDal.findById({
-        boardId: board.id,
-        userId,
-      })
-      if (!member) throw ERR.NOT_FOUND('Board not found')
-    }
-
+    await requireBoardAccess(shape.boardId, userId)
     return shape
   },
 
@@ -70,14 +53,7 @@ export const shapeService = {
     const { id: userId } = await requireSession()
     const { boardId } = ShapeLoadByBoardSchema.parse(input)
 
-    const board = await boardDal.findById({ boardId })
-    if (!board) throw ERR.NOT_FOUND('Board not found')
-
-    if (board.ownerId !== userId) {
-      const member = await boardMemberDal.findById({ boardId, userId })
-      if (!member) throw ERR.NOT_FOUND('Board not found')
-    }
-
+    await requireBoardAccess(boardId, userId)
     return shapeDal.loadByBoard({ boardId })
   },
 
@@ -86,30 +62,26 @@ export const shapeService = {
     const { shapeId, dataJson, styleJson, zIndex, layerId } =
       ShapeUpdateSchema.parse(input)
 
-    const shape = await shapeDal.findById({ shapeId })
+    const shape = await shapeDal.findActiveById({ shapeId })
     if (!shape) throw ERR.NOT_FOUND('Shape not found')
 
-    const board = await boardDal.findById({ boardId: shape.boardId })
-    if (!board) throw ERR.NOT_FOUND('Board not found')
+    await requireEditorAccess(shape.boardId, userId)
 
-    if (board.ownerId !== userId) {
-      const member = await boardMemberDal.findById({
-        boardId: board.id,
-        userId,
-      })
-      if (!member) throw ERR.NOT_FOUND('Board not found')
-      if (member.role === RoleType.VIEWER)
-        throw ERR.UNAUTHORIZED('Only owner or editor can update shapes')
+    if (layerId !== undefined) {
+      const layer = await layerDal.findActiveById({ layerId })
+      if (!layer || layer.boardId !== shape.boardId) {
+        throw ERR.NOT_FOUND('Layer not found')
+      }
     }
 
     const updateData = {
       ...(dataJson !== undefined && { dataJson }),
       ...(styleJson !== undefined && { styleJson }),
-      ...(layerId !== undefined && { layerId }),
       ...(zIndex !== undefined && { zIndex }),
+      ...(layerId !== undefined && { layerId }),
     }
 
-    return await shapeDal.update({
+    return shapeDal.update({
       shapeId,
       ...updateData,
     })
@@ -119,22 +91,10 @@ export const shapeService = {
     const { id: userId } = await requireSession()
     const { shapeId } = ShapeRemoveSchema.parse(input)
 
-    const shape = await shapeDal.findById({ shapeId })
+    const shape = await shapeDal.findActiveById({ shapeId })
     if (!shape) throw ERR.NOT_FOUND('Shape not found')
 
-    const board = await boardDal.findById({ boardId: shape.boardId })
-    if (!board) throw ERR.NOT_FOUND('Board not found')
-
-    if (board.ownerId !== userId) {
-      const member = await boardMemberDal.findById({
-        boardId: board.id,
-        userId,
-      })
-      if (!member) throw ERR.NOT_FOUND('Board not found')
-      if (member.role === RoleType.VIEWER)
-        throw ERR.UNAUTHORIZED('Only owner or editor can remove shapes')
-    }
-
-    return shapeDal.remove({ shapeId })
+    await requireEditorAccess(shape.boardId, userId)
+    return shapeDal.softDelete({ shapeId })
   },
 }

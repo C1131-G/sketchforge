@@ -5,7 +5,7 @@ import { withLogContext } from '@/lib/logger/helper'
 import { ERR } from '@/lib/errors/error.map'
 
 export const shapeDal = {
-  create: async (data: {
+  async create(data: {
     boardId: string
     layerId: string
     type: ShapeType
@@ -13,57 +13,48 @@ export const shapeDal = {
     styleJson: Prisma.InputJsonValue
     ownerId: string
     zIndex: number
-  }) => {
+  }) {
     const log = withLogContext({
       event: 'db',
       action: 'shape.create',
       meta: { boardId: data.boardId },
     })
+
     try {
       return await prisma.shape.create({
-        data: {
-          boardId: data.boardId,
-          layerId: data.layerId,
-          type: data.type,
-          dataJson: data.dataJson,
-          styleJson: data.styleJson,
-          ownerId: data.ownerId,
-          zIndex: data.zIndex,
-        },
+        data,
       })
     } catch (err) {
-      log.error(err, 'Shape DAL: create failed')
+      log.error(err, 'Shape create failed')
       throw ERR.INTERNAL('Failed to create shape')
     }
   },
 
-  loadByBoard: async (data: { boardId: string }) => {
+  async loadByBoard(data: { boardId: string }) {
     const log = withLogContext({
       event: 'db',
       action: 'shape.loadByBoard',
       meta: { boardId: data.boardId },
     })
+
     try {
-      return prisma.shape.findMany({
-        where: { boardId: data.boardId },
-        orderBy: [
-          {
-            layerId: 'asc',
-          },
-          {
-            zIndex: 'asc',
-          },
-        ],
+      return await prisma.shape.findMany({
+        where: {
+          boardId: data.boardId,
+          deletedAt: null,
+        },
+        orderBy: [{ layerId: 'asc' }, { zIndex: 'asc' }],
       })
     } catch (err) {
-      log.error(err, 'Shape DAL: loadByBoard failed')
-      throw ERR.INTERNAL('Failed to load board')
+      log.error(err, 'Shape load failed')
+      throw ERR.INTERNAL('Failed to load shapes')
     }
   },
-  async findById(data: { shapeId: string }) {
+
+  async findActiveById(data: { shapeId: string }) {
     const log = withLogContext({
       event: 'db',
-      action: 'shape.findById',
+      action: 'shape.findActiveById',
       meta: { shapeId: data.shapeId },
     })
 
@@ -75,48 +66,50 @@ export const shapeDal = {
         },
       })
     } catch (err) {
-      log.error(err, 'Shape DAL: findById failed')
-      throw ERR.INTERNAL('Failed to find shape')
+      log.error(err, 'Shape find failed')
+      throw ERR.INTERNAL('Failed to fetch shape')
     }
   },
 
-  update: async (data: {
+  async update(data: {
     shapeId: string
     dataJson?: Prisma.InputJsonValue
     styleJson?: Prisma.InputJsonValue
     zIndex?: number
     layerId?: string
-  }) => {
+  }) {
     const log = withLogContext({
       event: 'db',
       action: 'shape.update',
       meta: { shapeId: data.shapeId },
     })
+
     try {
       return await prisma.shape.update({
         where: { id: data.shapeId },
         data,
       })
     } catch (err) {
-      log.error(err, 'Shape DAL: update failed')
+      log.error(err, 'Shape update failed')
       throw ERR.INTERNAL('Failed to update shape')
     }
   },
 
-  remove: async (data: { shapeId: string }) => {
+  async softDelete(data: { shapeId: string }) {
     const log = withLogContext({
       event: 'db',
-      action: 'shape.removeShape',
+      action: 'shape.softDelete',
       meta: { shapeId: data.shapeId },
     })
+
     try {
       return await prisma.shape.update({
         where: { id: data.shapeId },
         data: { deletedAt: new Date() },
       })
     } catch (err) {
-      log.error(err, 'Shape DAL: remove failed')
-      throw ERR.INTERNAL('Failed to remove shape')
+      log.error(err, 'Shape delete failed')
+      throw ERR.INTERNAL('Failed to delete shape')
     }
   },
 }
