@@ -1,17 +1,15 @@
 import { z } from 'zod'
-import { BoardIdSchema, UserIdSchema } from '@/lib/schemas/common/id.schema'
-import { RoleType } from '@/prisma/generated/prisma/enums'
-
-const TokenSchema = z
-  .string()
-  .min(32, 'Invalid invite token')
-  .max(128, 'Invalid invite token')
-const RoleSchema = z.enum(RoleType)
+import {
+  BoardIdSchema,
+  TargetUserIdSchema,
+} from '@/lib/schemas/common/id.schema'
+import { TokenSchema } from '@/lib/schemas/common/token.schema'
+import { RoleSchema } from '@/lib/schemas/common/enum.schema'
 
 export const BoardMemberCreateSchema = z.object({
   boardId: BoardIdSchema,
   role: RoleSchema,
-  targetUserId: UserIdSchema,
+  targetUserId: TargetUserIdSchema,
 })
 
 export const BoardMemberListOfBoardsSchema = z.object({
@@ -20,13 +18,13 @@ export const BoardMemberListOfBoardsSchema = z.object({
 
 export const BoardMemberUpdateSchema = z.object({
   boardId: BoardIdSchema,
-  targetUserId: UserIdSchema,
+  targetUserId: TargetUserIdSchema,
   role: RoleSchema,
 })
 
 export const BoardMemberRemoveSchema = z.object({
   boardId: BoardIdSchema,
-  targetUserId: UserIdSchema,
+  targetUserId: TargetUserIdSchema,
 })
 
 export const CreateInviteSchema = z.object({

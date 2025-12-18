@@ -1,104 +1,122 @@
-// import { ShapeType } from '@/prisma/generated/prisma/enums'
-// import { prisma } from '@/lib/prisma/prisma'
-// import { Prisma } from '@/prisma/generated/prisma/client'
-// import { logError } from '@/lib/logger/helper'
-//
-// export const shapeDal = {
-//   create: async (
-//     boardId: string,
-//     layerId: string,
-//     type: ShapeType,
-//     dataJson: Prisma.InputJsonValue,
-//     styleJson: Prisma.InputJsonValue,
-//     ownerId: string,
-//     zIndex: number,
-//   ) => {
-//     try {
-//       return await prisma.shape.create({
-//         data: {
-//           boardId,
-//           layerId,
-//           type,
-//           dataJson,
-//           styleJson,
-//           ownerId,
-//           zIndex,
-//         },
-//       })
-//     } catch (err) {
-//       logError(
-//         {
-//           event: 'db',
-//           action: 'shape.create',
-//           meta: { boardId, layerId, ownerId, type },
-//         },
-//         err,
-//         'Shape DAL create crashed',
-//       )
-//       return null
-//     }
-//   },
-//
-//   loadByBoard: async (boardId: string) => {
-//     try {
-//       return prisma.shape.findMany({
-//         where: { boardId },
-//         orderBy: [
-//           {
-//             layerId: 'asc',
-//           },
-//           {
-//             zIndex: 'asc',
-//           },
-//         ],
-//       })
-//     } catch (err) {
-//       logError(
-//         { event: 'db', action: 'shape.loadByBoard', meta: { boardId } },
-//         err,
-//         'Shape DAL loadByBoard crashed',
-//       )
-//       return null
-//     }
-//   },
-//
-//   update: async (
-//     shapeId: string,
-//     data: {
-//       dataJson?: Prisma.InputJsonValue
-//       styleJson?: Prisma.InputJsonValue
-//       zIndex?: number
-//       layerId?: string
-//     },
-//   ) => {
-//     try {
-//       return await prisma.shape.update({
-//         where: { id: shapeId },
-//         data,
-//       })
-//     } catch (err) {
-//       logError(
-//         { event: 'db', action: 'shape.update', meta: { shapeId } },
-//         err,
-//         'Shape DAL update crashed',
-//       )
-//       return null
-//     }
-//   },
-//
-//   remove: async (shapeId: string) => {
-//     try {
-//       return await prisma.shape.update({
-//         where: { id: shapeId },
-//         data: { deletedAt: new Date() },
-//       })
-//     } catch (err) {
-//       logError(
-//         { event: 'db', action: 'shape.removeShape', meta: { shapeId } },
-//         err,
-//         'Shape DAL removeShape crashed',
-//       )
-//       return null
-//     }
-//   },
-// }
+import { ShapeType } from '@/prisma/generated/prisma/enums'
+import { prisma } from '@/lib/prisma/prisma'
+import { Prisma } from '@/prisma/generated/prisma/client'
+import { withLogContext } from '@/lib/logger/helper'
+import { ERR } from '@/lib/errors/error.map'
+
+export const shapeDal = {
+  create: async (data: {
+    boardId: string
+    layerId: string
+    type: ShapeType
+    dataJson: Prisma.InputJsonValue
+    styleJson: Prisma.InputJsonValue
+    ownerId: string
+    zIndex: number
+  }) => {
+    const log = withLogContext({
+      event: 'db',
+      action: 'shape.create',
+      meta: { boardId: data.boardId },
+    })
+    try {
+      return await prisma.shape.create({
+        data: {
+          boardId: data.boardId,
+          layerId: data.layerId,
+          type: data.type,
+          dataJson: data.dataJson,
+          styleJson: data.styleJson,
+          ownerId: data.ownerId,
+          zIndex: data.zIndex,
+        },
+      })
+    } catch (err) {
+      log.error(err, 'Shape DAL: create failed')
+      throw ERR.INTERNAL('Failed to create shape')
+    }
+  },
+
+  loadByBoard: async (data: { boardId: string }) => {
+    const log = withLogContext({
+      event: 'db',
+      action: 'shape.loadByBoard',
+      meta: { boardId: data.boardId },
+    })
+    try {
+      return prisma.shape.findMany({
+        where: { boardId: data.boardId },
+        orderBy: [
+          {
+            layerId: 'asc',
+          },
+          {
+            zIndex: 'asc',
+          },
+        ],
+      })
+    } catch (err) {
+      log.error(err, 'Shape DAL: loadByBoard failed')
+      throw ERR.INTERNAL('Failed to load board')
+    }
+  },
+  async findById(data: { shapeId: string }) {
+    const log = withLogContext({
+      event: 'db',
+      action: 'shape.findById',
+      meta: { shapeId: data.shapeId },
+    })
+
+    try {
+      return await prisma.shape.findFirst({
+        where: {
+          id: data.shapeId,
+          deletedAt: null,
+        },
+      })
+    } catch (err) {
+      log.error(err, 'Shape DAL: findById failed')
+      throw ERR.INTERNAL('Failed to find shape')
+    }
+  },
+
+  update: async (data: {
+    shapeId: string
+    dataJson?: Prisma.InputJsonValue
+    styleJson?: Prisma.InputJsonValue
+    zIndex?: number
+    layerId?: string
+  }) => {
+    const log = withLogContext({
+      event: 'db',
+      action: 'shape.update',
+      meta: { shapeId: data.shapeId },
+    })
+    try {
+      return await prisma.shape.update({
+        where: { id: data.shapeId },
+        data,
+      })
+    } catch (err) {
+      log.error(err, 'Shape DAL: update failed')
+      throw ERR.INTERNAL('Failed to update shape')
+    }
+  },
+
+  remove: async (data: { shapeId: string }) => {
+    const log = withLogContext({
+      event: 'db',
+      action: 'shape.removeShape',
+      meta: { shapeId: data.shapeId },
+    })
+    try {
+      return await prisma.shape.update({
+        where: { id: data.shapeId },
+        data: { deletedAt: new Date() },
+      })
+    } catch (err) {
+      log.error(err, 'Shape DAL: remove failed')
+      throw ERR.INTERNAL('Failed to remove shape')
+    }
+  },
+}
