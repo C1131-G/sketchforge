@@ -1,34 +1,31 @@
 import { z } from 'zod'
-import {
-  BoardIdSchema,
-  TargetUserIdSchema,
-} from '@/lib/schemas/common/id.schema'
 import { TokenSchema } from '@/lib/schemas/common/token.schema'
 import { RoleSchema } from '@/lib/schemas/common/enum.schema'
+import { Id } from '@/lib/schemas/common/id.schema'
 
 export const BoardMemberCreateSchema = z.object({
-  boardId: BoardIdSchema,
+  boardId: Id.board,
   role: RoleSchema,
-  targetUserId: TargetUserIdSchema,
+  targetUserId: Id.user,
 })
 
 export const BoardMemberListOfBoardsSchema = z.object({
-  boardId: BoardIdSchema,
+  boardId: Id.board,
 })
 
 export const BoardMemberUpdateSchema = z.object({
-  boardId: BoardIdSchema,
-  targetUserId: TargetUserIdSchema,
+  boardId: Id.board,
+  targetUserId: Id.user,
   role: RoleSchema,
 })
 
 export const BoardMemberRemoveSchema = z.object({
-  boardId: BoardIdSchema,
-  targetUserId: TargetUserIdSchema,
+  boardId: Id.board,
+  targetUserId: Id.user,
 })
 
 export const CreateInviteSchema = z.object({
-  boardId: BoardIdSchema,
+  boardId: Id.board,
   token: TokenSchema,
   role: RoleSchema.optional(),
 })
@@ -38,6 +35,6 @@ export const AcceptInviteSchema = z.object({
 })
 
 export const RevokeInviteSchema = z.object({
-  boardId: BoardIdSchema,
+  boardId: Id.board,
   token: TokenSchema,
 })

@@ -1,10 +1,15 @@
-import { z } from 'zod'
+import z from 'zod'
 
-export const BoardIdSchema = z.cuid()
-export const LayerIdSchema = z.cuid()
-export const ShapeIdSchema = z.cuid()
-export const StrokeIdSchema = z.cuid()
-export const SnapshotIdSchema = z.cuid()
-export const TargetUserIdSchema = z.cuid()
-export const LayerZIndexSchema = z.number().int().min(0)
-export const ShapeZIndexSchema = z.number().int().min(0)
+export const Id = {
+  board: z.cuid(),
+  layer: z.cuid(),
+  shape: z.cuid(),
+  stroke: z.cuid(),
+  snapshot: z.cuid(),
+  user: z.cuid(),
+}
+
+export const ZIndex = {
+  layer: z.number().int().min(0),
+  shape: z.number().int().min(0),
+}

@@ -1,37 +1,32 @@
 import { z } from 'zod'
-import {
-  BoardIdSchema,
-  LayerIdSchema,
-  ShapeIdSchema,
-  ShapeZIndexSchema,
-} from '@/lib/schemas/common/id.schema'
 import { ShapeSchema } from '@/lib/schemas/common/enum.schema'
 import { JsonValueSchema } from '@/lib/schemas/common/json.schema'
+import { Id, ZIndex } from '@/lib/schemas/common/id.schema'
 
 export const ShapeCreateSchema = z.object({
-  boardId: BoardIdSchema,
-  layerId: LayerIdSchema,
+  boardId: Id.board,
+  layerId: Id.layer,
   type: ShapeSchema,
   dataJson: JsonValueSchema,
   styleJson: JsonValueSchema,
-  zIndex: ShapeZIndexSchema,
+  zIndex: ZIndex.shape,
 })
 
 export const ShapeLoadByBoardSchema = z.object({
-  boardId: BoardIdSchema,
+  boardId: Id.board,
 })
 
 export const ShapeFindByIdSchema = z.object({
-  shapeId: ShapeIdSchema,
+  shapeId: Id.shape,
 })
 
 export const ShapeUpdateSchema = z
   .object({
-    shapeId: ShapeIdSchema,
+    shapeId: Id.shape,
     dataJson: JsonValueSchema.optional(),
     styleJson: JsonValueSchema.optional(),
-    zIndex: ShapeZIndexSchema.optional(),
-    layerId: LayerIdSchema.optional(),
+    zIndex: ZIndex.shape.optional(),
+    layerId: Id.layer.optional(),
   })
   .refine(
     (data) =>
@@ -46,5 +41,5 @@ export const ShapeUpdateSchema = z
   )
 
 export const ShapeRemoveSchema = z.object({
-  shapeId: ShapeIdSchema,
+  shapeId: Id.shape,
 })

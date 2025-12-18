@@ -1,4 +1,4 @@
-import { signinSchema, signupSchema } from '@/lib/schemas/user.schema'
+import { SigninSchema, SignupSchema } from '@/lib/schemas/user.schema'
 import { withLogContext } from '@/lib/logger/helper'
 import { ERR } from '@/lib/errors/error.map'
 import { userService } from '@/lib/services/user.service'
@@ -9,7 +9,7 @@ export const authService = {
   async signUp(input: unknown) {
     const log = withLogContext({ event: 'auth', action: 'signup' })
 
-    const parsed = signupSchema.safeParse(input)
+    const parsed = SignupSchema.safeParse(input)
     if (!parsed.success) {
       log.warn('Signup failed: invalid input')
       throw ERR.BAD_REQUEST('Invalid signup data')
@@ -44,7 +44,7 @@ export const authService = {
   async signIn(input: unknown) {
     const log = withLogContext({ event: 'auth', action: 'signin' })
 
-    const parsed = signinSchema.safeParse(input)
+    const parsed = SigninSchema.safeParse(input)
     if (!parsed.success) {
       log.warn('Signin failed: invalid input')
       throw ERR.BAD_REQUEST('Invalid email or password')

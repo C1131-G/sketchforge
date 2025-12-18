@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { BoardVisibility } from '@/prisma/generated/prisma/enums'
-import { BoardIdSchema } from '@/lib/schemas/common/id.schema'
+import { Id } from '@/lib/schemas/common/id.schema'
 import { TitleSchema } from '@/lib/schemas/common/name.schema'
 
 export const BoardCreateSchema = z.object({
@@ -8,12 +8,12 @@ export const BoardCreateSchema = z.object({
 })
 
 export const BoardFindByIdSchema = z.object({
-  boardId: BoardIdSchema,
+  boardId: Id.board,
 })
 
 export const BoardUpdateSchema = z
   .object({
-    boardId: BoardIdSchema,
+    boardId: Id.board,
     title: TitleSchema.optional(),
     visibility: z.enum(BoardVisibility).optional(),
   })
@@ -22,5 +22,5 @@ export const BoardUpdateSchema = z
   })
 
 export const BoardRemoveSchema = z.object({
-  boardId: BoardIdSchema,
+  boardId: Id.board,
 })

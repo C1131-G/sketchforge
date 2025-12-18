@@ -1,32 +1,28 @@
 import { z } from 'zod'
-import {
-  BoardIdSchema,
-  LayerIdSchema,
-  LayerZIndexSchema,
-} from '@/lib/schemas/common/id.schema'
 import { TitleSchema } from '@/lib/schemas/common/name.schema'
+import { Id, ZIndex } from '@/lib/schemas/common/id.schema'
 
 export const LayerCreateSchema = z.object({
-  boardId: BoardIdSchema,
+  boardId: Id.board,
   name: TitleSchema,
-  zIndex: LayerZIndexSchema,
+  zIndex: ZIndex.layer,
 })
 
 export const LayerListByBoardSchema = z.object({
-  boardId: BoardIdSchema,
+  boardId: Id.board,
 })
 
 export const LayerFindByIdSchema = z.object({
-  layerId: LayerIdSchema,
+  layerId: Id.layer,
 })
 
 export const LayerUpdateSchema = z
   .object({
-    layerId: LayerIdSchema,
+    layerId: Id.layer,
     name: TitleSchema.optional(),
     isLocked: z.boolean().optional(),
     isVisible: z.boolean().optional(),
-    zIndex: LayerZIndexSchema.optional(),
+    zIndex: ZIndex.layer.optional(),
   })
   .refine(
     (data) =>
@@ -41,5 +37,5 @@ export const LayerUpdateSchema = z
   )
 
 export const LayerRemoveSchema = z.object({
-  layerId: LayerIdSchema,
+  layerId: Id.layer,
 })
