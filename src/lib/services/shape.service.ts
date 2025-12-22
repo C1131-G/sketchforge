@@ -13,6 +13,7 @@ import {
   requireBoardAccess,
   requireEditorAccess,
 } from '@/lib/services/permission.service'
+import { cacheLife, cacheTag, revalidateTag } from 'next/cache'
 
 export const shapeService = {
   async create(input: unknown) {
@@ -27,7 +28,7 @@ export const shapeService = {
       throw ERR.NOT_FOUND('Layer not found')
     }
 
-    return shapeDal.create({
+    const createShape = await shapeDal.create({
       boardId,
       layerId,
       type,
@@ -36,11 +37,17 @@ export const shapeService = {
       ownerId: userId,
       zIndex,
     })
+    revalidateTag(`board:${boardId}:shapes`, 'max')
+    return createShape
   },
 
   async findById(input: unknown) {
+    'use cache'
     const { id: userId } = await requireSession()
     const { shapeId } = ShapeFindByIdSchema.parse(input)
+
+    cacheTag(`shape:${shapeId}`)
+    cacheLife('minutes')
 
     const shape = await shapeDal.findActiveById({ shapeId })
     if (!shape) throw ERR.NOT_FOUND('Shape not found')
@@ -50,8 +57,12 @@ export const shapeService = {
   },
 
   async loadByBoard(input: unknown) {
+    'use cache'
     const { id: userId } = await requireSession()
     const { boardId } = ShapeLoadByBoardSchema.parse(input)
+
+    cacheTag(`board:${boardId}:shapes`)
+    cacheLife('minutes')
 
     await requireBoardAccess(boardId, userId)
     return shapeDal.loadByBoard({ boardId })
@@ -81,10 +92,15 @@ export const shapeService = {
       ...(layerId !== undefined && { layerId }),
     }
 
-    return shapeDal.update({
+    const updatedShape = await shapeDal.update({
       shapeId,
       ...updateData,
     })
+
+    revalidateTag(`shape:${shapeId}`, 'max')
+    revalidateTag(`board:${shape.boardId}:shapes`, 'max')
+
+    return updatedShape
   },
 
   async remove(input: unknown) {
@@ -95,6 +111,10 @@ export const shapeService = {
     if (!shape) throw ERR.NOT_FOUND('Shape not found')
 
     await requireEditorAccess(shape.boardId, userId)
-    return shapeDal.softDelete({ shapeId })
+    await shapeDal.softDelete({ shapeId })
+
+    revalidateTag(`shape:${shapeId}`, 'max')
+    revalidateTag(`board:${shape.boardId}:shapes`, 'max')
+    return { success: true }
   },
 }

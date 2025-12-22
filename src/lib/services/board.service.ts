@@ -8,20 +8,27 @@ import {
   BoardRemoveSchema,
 } from '@/lib/schemas/board.schema'
 import { requireBoard, requireOwner } from '@/lib/services/permission.service'
+import { cacheLife, cacheTag, revalidateTag } from 'next/cache'
 
 export const boardService = {
   async create(input: unknown) {
     const { id: userId } = await requireSession()
     const { title } = BoardCreateSchema.parse(input)
 
-    return boardDal.create({
+    const board = await boardDal.create({
       ownerId: userId,
       title,
     })
+
+    revalidateTag(`user:${userId}:boards`, 'max')
+    return board
   },
 
   async findById(input: unknown) {
+    'use cache'
     const { boardId } = BoardFindByIdSchema.parse(input)
+    cacheTag(`board:${boardId}`)
+    cacheLife('minutes')
     const board = await requireBoard(boardId)
 
     if (board.visibility !== 'PRIVATE') return board
@@ -32,7 +39,10 @@ export const boardService = {
   },
 
   async listOwnerBoards() {
+    'use cache'
     const { id: userId } = await requireSession()
+    cacheTag(`owner:${userId}:boards`)
+    cacheLife('minutes')
     return boardDal.listByOwner({ ownerId: userId })
   },
 
@@ -46,10 +56,14 @@ export const boardService = {
       ...(visibility !== undefined && { visibility }),
     }
 
-    return boardDal.update({
+    const updatedBoard = await boardDal.update({
       boardId,
       ...updateData,
     })
+    revalidateTag(`board:${boardId}`, 'max')
+    revalidateTag(`owner:${userId}:boards`, 'max')
+
+    return updatedBoard
   },
 
   async remove(input: unknown) {
@@ -57,6 +71,11 @@ export const boardService = {
     const { boardId } = BoardRemoveSchema.parse(input)
 
     await requireOwner(boardId, userId)
-    return boardDal.softDelete({ boardId })
+    await boardDal.softDelete({ boardId })
+
+    revalidateTag(`board:${boardId}`, 'max')
+    revalidateTag(`owner:${userId}:boards`, 'max')
+
+    return { success: true }
   },
 }

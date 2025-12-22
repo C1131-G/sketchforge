@@ -12,6 +12,7 @@ import {
   requireBoardAccess,
   requireEditorAccess,
 } from '@/lib/services/permission.service'
+import { cacheLife, cacheTag, revalidateTag } from 'next/cache'
 
 export const strokeService = {
   async create(input: unknown) {
@@ -26,18 +27,25 @@ export const strokeService = {
       throw ERR.NOT_FOUND('Layer not found')
     }
 
-    return strokeDal.create({
+    const createStroke = await strokeDal.create({
       boardId,
       layerId,
       ownerId: userId,
       pointsBlob,
       penPropsJson,
     })
+
+    revalidateTag(`board:${boardId}:strokes`, 'max')
+    return createStroke
   },
 
   async findById(input: unknown) {
+    'use cache'
     const { id: userId } = await requireSession()
     const { strokeId } = StrokeFindByIdSchema.parse(input)
+
+    cacheTag(`strokeId:${strokeId}`)
+    cacheLife('minutes')
 
     const stroke = await strokeDal.findActiveById({ strokeId })
     if (!stroke) throw ERR.NOT_FOUND('Stroke not found')
@@ -47,8 +55,12 @@ export const strokeService = {
   },
 
   async listByBoard(input: unknown) {
+    'use cache'
     const { id: userId } = await requireSession()
     const { boardId } = StrokeListByBoardSchema.parse(input)
+
+    cacheTag(`board:${boardId}:strokes`)
+    cacheLife('minutes')
 
     await requireBoardAccess(boardId, userId)
     return strokeDal.listByBoard({ boardId })
@@ -62,6 +74,11 @@ export const strokeService = {
     if (!stroke) throw ERR.NOT_FOUND('Stroke not found')
 
     await requireEditorAccess(stroke.boardId, userId)
-    return strokeDal.softDelete({ strokeId })
+    await strokeDal.softDelete({ strokeId })
+
+    revalidateTag(`strokeId:${strokeId}`, 'max')
+    revalidateTag(`board:${stroke.boardId}:strokes`, 'max')
+
+    return { success: true }
   },
 }

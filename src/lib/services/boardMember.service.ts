@@ -15,6 +15,7 @@ import {
   requireBoardAccess,
   requireOwner,
 } from '@/lib/services/permission.service'
+import { cacheLife, cacheTag, revalidateTag } from 'next/cache'
 
 export const boardMemberService = {
   async create(input: unknown) {
@@ -29,16 +30,23 @@ export const boardMemberService = {
     })
     if (existing) throw ERR.CONFLICT('User already a member')
 
-    return boardMemberDal.create({
+    const member = await boardMemberDal.create({
       boardId,
       targetUserId,
       role,
     })
+
+    revalidateTag(`board:${boardId}:members`, 'max')
+    return member
   },
 
   async listMembers(input: unknown) {
+    'use cache'
     const { id: userId } = await requireSession()
     const { boardId } = BoardMemberListOfBoardsSchema.parse(input)
+
+    cacheTag(`board:${boardId}:members`)
+    cacheLife('minutes')
 
     await requireBoardAccess(boardId, userId)
     return boardMemberDal.listMembers({ boardId })
@@ -54,11 +62,13 @@ export const boardMemberService = {
       throw ERR.BAD_REQUEST('Cannot change owner role')
     }
 
-    return boardMemberDal.update({
+    const updatedMember = await boardMemberDal.update({
       boardId,
       targetUserId,
       role,
     })
+    revalidateTag(`board:${boardId}:members`, 'max')
+    return updatedMember
   },
 
   async remove(input: unknown) {
@@ -71,10 +81,12 @@ export const boardMemberService = {
       throw ERR.BAD_REQUEST('Cannot remove board owner')
     }
 
-    return boardMemberDal.remove({
+    const removedMember = await boardMemberDal.remove({
       boardId,
       targetUserId,
     })
+    revalidateTag(`board:${boardId}:members`, 'max')
+    return removedMember
   },
 
   async createInvite(input: unknown) {
@@ -111,6 +123,8 @@ export const boardMemberService = {
     if (result.count !== 1) {
       throw ERR.INTERNAL('Invite acceptance failed')
     }
+
+    revalidateTag(`board:${invite.boardId}:members`, 'max')
 
     return result
   },

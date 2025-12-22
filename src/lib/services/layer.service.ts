@@ -12,6 +12,7 @@ import {
   requireBoardAccess,
   requireEditorAccess,
 } from '@/lib/services/permission.service'
+import { cacheLife, cacheTag, revalidateTag } from 'next/cache'
 
 export const layerService = {
   async create(input: unknown) {
@@ -20,24 +21,35 @@ export const layerService = {
 
     await requireEditorAccess(boardId, userId)
 
-    return layerDal.create({
+    const createLayer = await layerDal.create({
       boardId,
       name,
       zIndex,
     })
+
+    revalidateTag(`board:${boardId}:layers`, 'max')
+    return createLayer
   },
 
   async listByBoard(input: unknown) {
+    'use cache'
     const { id: userId } = await requireSession()
     const { boardId } = LayerListByBoardSchema.parse(input)
+
+    cacheTag(`board:${boardId}:layers`)
+    cacheLife('minutes')
 
     await requireBoardAccess(boardId, userId)
     return layerDal.listByBoard({ boardId })
   },
 
   async findById(input: unknown) {
+    'use cache'
     const { id: userId } = await requireSession()
     const { layerId } = LayerFindByIdSchema.parse(input)
+
+    cacheTag(`layer:${layerId}`)
+    cacheLife('minutes')
 
     const layer = await layerDal.findActiveById({ layerId })
     if (!layer) throw ERR.NOT_FOUND('Layer not found')
@@ -63,10 +75,14 @@ export const layerService = {
       ...(zIndex !== undefined && { zIndex }),
     }
 
-    return layerDal.update({
+    const updatedLayer = await layerDal.update({
       layerId,
       ...updateData,
     })
+
+    revalidateTag(`layer:${layerId}`, 'max')
+    revalidateTag(`board:${layer.boardId}:layers`, 'max')
+    return updatedLayer
   },
 
   async remove(input: unknown) {
@@ -77,6 +93,11 @@ export const layerService = {
     if (!layer) throw ERR.NOT_FOUND('Layer not found')
 
     await requireEditorAccess(layer.boardId, userId)
-    return layerDal.softDelete({ layerId })
+    await layerDal.softDelete({ layerId })
+
+    revalidateTag(`layer:${layerId}`, 'max')
+    revalidateTag(`board:${layer.boardId}:layers`, 'max')
+
+    return { success: true }
   },
 }
