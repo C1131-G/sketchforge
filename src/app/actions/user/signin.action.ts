@@ -1,11 +1,11 @@
 'use server'
 
 import { authService } from '@/lib/services/auth.service'
-import { withLogContext } from '@/lib/logger/helper'
-import { AppError } from '@/lib/errors/AppError'
+import { createLogger } from '@/lib/logger/logger'
+import { AppError } from '@/lib/errors/app-error'
 
 export async function signIn(formData: FormData) {
-  const log = withLogContext({ event: 'auth', action: 'signin' })
+  const log = createLogger({ event: 'auth', action: 'signin' })
   try {
     const data = await authService.signIn({
       email: formData.get('email'),

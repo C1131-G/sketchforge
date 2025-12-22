@@ -1,9 +1,9 @@
-import { SessionUser } from '@/lib/types/sessionuser.types'
+import { SessionUserType } from '@/lib/types/session-user.types'
 import { auth } from '@/lib/auth/auth'
 import { headers } from 'next/headers'
 import { ERR } from '@/lib/errors/error.map'
 
-export async function requireSession(): Promise<SessionUser> {
+export async function requireSession(): Promise<SessionUserType> {
   const session = await auth.api.getSession({
     headers: await headers(),
   })

@@ -1,11 +1,11 @@
 'use server'
 
-import { withLogContext } from '@/lib/logger/helper'
+import { createLogger } from '@/lib/logger/logger'
 import { boardService } from '@/lib/services/board.service'
-import { AppError } from '@/lib/errors/AppError'
+import { AppError } from '@/lib/errors/app-error'
 
 export async function removeBoard(input: unknown) {
-  const log = withLogContext({ event: 'board', action: 'remove' })
+  const log = createLogger({ event: 'board', action: 'remove' })
   try {
     await boardService.remove(input)
     return { success: true }

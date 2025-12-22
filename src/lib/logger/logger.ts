@@ -1,12 +1,25 @@
-import pino from 'pino'
+import { logger } from '@/lib/logger/pino-logger'
+import { LogContextType } from '@/lib/types/logger.types'
 
-const isDev = process.env.APP_ENV !== 'production'
+export const createLogger = (ctx: LogContextType) => ({
+  info(message: string) {
+    logger.info(ctx, message)
+  },
 
-export const logger = pino({
-  level: 'info',
-  ...(isDev && {
-    transport: {
-      target: 'pino-pretty',
-    },
-  }),
+  warn(message: string) {
+    logger.warn(ctx, message)
+  },
+
+  error(err: unknown, message: string) {
+    logger.error(
+      {
+        ...ctx,
+        err:
+          err instanceof Error
+            ? { message: err.message, stack: err.stack }
+            : err,
+      },
+      message,
+    )
+  },
 })

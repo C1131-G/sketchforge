@@ -1,10 +1,10 @@
 import { prisma } from '@/lib/prisma/prisma'
-import { withLogContext } from '@/lib/logger/helper'
+import { createLogger } from '@/lib/logger/logger'
 import { ERR } from '@/lib/errors/error.map'
 
 export const layerDal = {
   async create(data: { boardId: string; name: string; zIndex: number }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'layer.create',
       meta: { boardId: data.boardId },
@@ -21,7 +21,7 @@ export const layerDal = {
   },
 
   async listByBoard(data: { boardId: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'layer.listByBoard',
       meta: { boardId: data.boardId },
@@ -42,7 +42,7 @@ export const layerDal = {
   },
 
   async findActiveById(data: { layerId: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'layer.findActiveById',
       meta: { layerId: data.layerId },
@@ -68,7 +68,7 @@ export const layerDal = {
     isVisible?: boolean
     zIndex?: number
   }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'layer.update',
       meta: { layerId: data.layerId },
@@ -86,7 +86,7 @@ export const layerDal = {
   },
 
   async softDelete(data: { layerId: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'layer.softDelete',
       meta: { layerId: data.layerId },

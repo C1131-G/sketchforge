@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma/prisma'
 import { RoleType } from '@/prisma/generated/prisma/enums'
-import { withLogContext } from '@/lib/logger/helper'
+import { createLogger } from '@/lib/logger/logger'
 import { ERR } from '@/lib/errors/error.map'
 
 export const boardMemberDal = {
@@ -9,7 +9,7 @@ export const boardMemberDal = {
     targetUserId: string
     role: RoleType
   }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'boardMember.create',
       meta: { boardId: data.boardId },
@@ -31,7 +31,7 @@ export const boardMemberDal = {
   },
 
   async findById(data: { boardId: string; userId: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'boardMember.findById',
       meta: { boardId: data.boardId },
@@ -53,7 +53,7 @@ export const boardMemberDal = {
   },
 
   async listMembers(data: { boardId: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'boardMember.listMembers',
       meta: { boardId: data.boardId },
@@ -78,7 +78,7 @@ export const boardMemberDal = {
     targetUserId: string
     role: RoleType
   }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'boardMember.update',
       meta: { boardId: data.boardId },
@@ -103,7 +103,7 @@ export const boardMemberDal = {
   },
 
   async remove(data: { boardId: string; targetUserId: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'boardMember.remove',
       meta: { boardId: data.boardId },
@@ -125,7 +125,7 @@ export const boardMemberDal = {
   },
 
   async createInvite(data: { boardId: string; token: string; role: RoleType }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'boardMember.createInvite',
       meta: { boardId: data.boardId },
@@ -146,7 +146,7 @@ export const boardMemberDal = {
   },
 
   async findInviteByToken(data: { token: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'boardMember.findInviteByToken',
     })
@@ -165,7 +165,7 @@ export const boardMemberDal = {
   },
 
   async acceptInvite(data: { token: string; userId: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'boardMember.acceptInvite',
     })
@@ -189,7 +189,7 @@ export const boardMemberDal = {
   },
 
   async revokeInvite(data: { token: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'boardMember.revokeInvite',
     })

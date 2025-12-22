@@ -1,11 +1,11 @@
 'use server'
 
 import { boardService } from '@/lib/services/board.service'
-import { withLogContext } from '@/lib/logger/helper'
-import { AppError } from '@/lib/errors/AppError'
+import { createLogger } from '@/lib/logger/logger'
+import { AppError } from '@/lib/errors/app-error'
 
 export async function createBoard(input: unknown) {
-  const log = withLogContext({ event: 'board', action: 'create' })
+  const log = createLogger({ event: 'board', action: 'create' })
 
   try {
     const board = await boardService.create(input)

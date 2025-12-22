@@ -1,12 +1,12 @@
 'use server'
 
 import { headers } from 'next/headers'
-import { AppError } from '@/lib/errors/AppError'
+import { AppError } from '@/lib/errors/app-error'
 import { authService } from '@/lib/services/auth.service'
-import { withLogContext } from '@/lib/logger/helper'
+import { createLogger } from '@/lib/logger/logger'
 
 export async function signOut() {
-  const log = withLogContext({ event: 'auth', action: 'signout' })
+  const log = createLogger({ event: 'auth', action: 'signout' })
   try {
     const data = await authService.signOut(await headers())
     return { success: true, data }

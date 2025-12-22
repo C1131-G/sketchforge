@@ -1,6 +1,6 @@
 import { requireSession } from '@/lib/auth/require-session'
 import { ERR } from '@/lib/errors/error.map'
-import { boardMemberDal } from '@/lib/dal/boardMember.dal'
+import { boardMemberDal } from '@/lib/dal/board-member.dal'
 import {
   BoardMemberCreateSchema,
   BoardMemberRemoveSchema,

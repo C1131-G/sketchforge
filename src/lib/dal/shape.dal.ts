@@ -1,7 +1,7 @@
 import { ShapeType } from '@/prisma/generated/prisma/enums'
 import { prisma } from '@/lib/prisma/prisma'
 import { Prisma } from '@/prisma/generated/prisma/client'
-import { withLogContext } from '@/lib/logger/helper'
+import { createLogger } from '@/lib/logger/logger'
 import { ERR } from '@/lib/errors/error.map'
 
 export const shapeDal = {
@@ -14,7 +14,7 @@ export const shapeDal = {
     ownerId: string
     zIndex: number
   }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'shape.create',
       meta: { boardId: data.boardId },
@@ -31,7 +31,7 @@ export const shapeDal = {
   },
 
   async loadByBoard(data: { boardId: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'shape.loadByBoard',
       meta: { boardId: data.boardId },
@@ -52,7 +52,7 @@ export const shapeDal = {
   },
 
   async findActiveById(data: { shapeId: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'shape.findActiveById',
       meta: { shapeId: data.shapeId },
@@ -78,7 +78,7 @@ export const shapeDal = {
     zIndex?: number
     layerId?: string
   }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'shape.update',
       meta: { shapeId: data.shapeId },
@@ -96,7 +96,7 @@ export const shapeDal = {
   },
 
   async softDelete(data: { shapeId: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'shape.softDelete',
       meta: { shapeId: data.shapeId },

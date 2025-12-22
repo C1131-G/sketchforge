@@ -1,9 +1,9 @@
 import 'dotenv/config'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@/prisma/generated/prisma/client'
-import { withLogContext } from '@/lib/logger/helper'
+import { createLogger } from '@/lib/logger/logger'
 
-const log = withLogContext({ event: 'prisma', action: 'connect' })
+const log = createLogger({ event: 'prisma', action: 'connect' })
 const connectionString = `${process.env.DATABASE_URL}`
 
 if (!connectionString) {

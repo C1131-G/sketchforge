@@ -1,10 +1,10 @@
 import { prisma } from '@/lib/prisma/prisma'
-import { withLogContext } from '@/lib/logger/helper'
+import { createLogger } from '@/lib/logger/logger'
 import { ERR } from '@/lib/errors/error.map'
 
 export const userDal = {
   async findByEmail(data: { email: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'user.findByEmail',
       meta: { email: data.email },

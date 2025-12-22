@@ -1,11 +1,11 @@
 'use server'
 
-import { withLogContext } from '@/lib/logger/helper'
+import { createLogger } from '@/lib/logger/logger'
 import { boardService } from '@/lib/services/board.service'
-import { AppError } from '@/lib/errors/AppError'
+import { AppError } from '@/lib/errors/app-error'
 
 export async function updateBoard(input: unknown) {
-  const log = withLogContext({ event: 'board', action: 'update' })
+  const log = createLogger({ event: 'board', action: 'update' })
   try {
     const board = await boardService.update(input)
 

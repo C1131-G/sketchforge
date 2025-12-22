@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma/prisma'
 import { Prisma } from '@/prisma/generated/prisma/client'
-import { withLogContext } from '@/lib/logger/helper'
+import { createLogger } from '@/lib/logger/logger'
 import { ERR } from '@/lib/errors/error.map'
 
 export const strokeDal = {
@@ -11,7 +11,7 @@ export const strokeDal = {
     pointsBlob: Prisma.Bytes
     penPropsJson: Prisma.InputJsonValue
   }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'stroke.create',
       meta: { boardId: data.boardId },
@@ -28,7 +28,7 @@ export const strokeDal = {
   },
 
   async findActiveById(data: { strokeId: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'stroke.findActiveById',
       meta: { strokeId: data.strokeId },
@@ -48,7 +48,7 @@ export const strokeDal = {
   },
 
   async listByBoard(data: { boardId: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'stroke.listByBoard',
       meta: { boardId: data.boardId },
@@ -69,7 +69,7 @@ export const strokeDal = {
   },
 
   async softDelete(data: { strokeId: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'stroke.softDelete',
       meta: { strokeId: data.strokeId },

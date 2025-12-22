@@ -1,11 +1,11 @@
 import { prisma } from '@/lib/prisma/prisma'
 import { BoardVisibility } from '@/prisma/generated/prisma/enums'
-import { withLogContext } from '@/lib/logger/helper'
+import { createLogger } from '@/lib/logger/logger'
 import { ERR } from '@/lib/errors/error.map'
 
 export const boardDal = {
   async create(data: { ownerId: string; title: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'board.create',
       meta: { ownerId: data.ownerId },
@@ -25,7 +25,7 @@ export const boardDal = {
   },
 
   async findActiveById(data: { boardId: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'board.findActiveById',
       meta: { boardId: data.boardId },
@@ -45,7 +45,7 @@ export const boardDal = {
   },
 
   async listByOwner(data: { ownerId: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'board.listByOwner',
       meta: { ownerId: data.ownerId },
@@ -70,7 +70,7 @@ export const boardDal = {
     title?: string
     visibility?: BoardVisibility
   }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'board.update',
       meta: { boardId: data.boardId },
@@ -88,7 +88,7 @@ export const boardDal = {
   },
 
   async softDelete(data: { boardId: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'board.softDelete',
       meta: { boardId: data.boardId },

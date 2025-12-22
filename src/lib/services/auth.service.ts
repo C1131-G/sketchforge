@@ -1,5 +1,5 @@
 import { SigninSchema, SignupSchema } from '@/lib/schemas/user.schema'
-import { withLogContext } from '@/lib/logger/helper'
+import { createLogger } from '@/lib/logger/logger'
 import { ERR } from '@/lib/errors/error.map'
 import { userService } from '@/lib/services/user.service'
 import { auth } from '@/lib/auth/auth'
@@ -7,7 +7,7 @@ import { SocialProviderType } from '@/lib/types/social.types'
 
 export const authService = {
   async signUp(input: unknown) {
-    const log = withLogContext({ event: 'auth', action: 'signup' })
+    const log = createLogger({ event: 'auth', action: 'signup' })
 
     const parsed = SignupSchema.safeParse(input)
     if (!parsed.success) {
@@ -42,7 +42,7 @@ export const authService = {
   },
 
   async signIn(input: unknown) {
-    const log = withLogContext({ event: 'auth', action: 'signin' })
+    const log = createLogger({ event: 'auth', action: 'signin' })
 
     const parsed = SigninSchema.safeParse(input)
     if (!parsed.success) {
@@ -71,7 +71,7 @@ export const authService = {
   },
 
   async signOut(headers: Headers) {
-    const log = withLogContext({ event: 'auth', action: 'signout' })
+    const log = createLogger({ event: 'auth', action: 'signout' })
 
     const result = await auth.api.signOut({ headers })
 
@@ -83,7 +83,7 @@ export const authService = {
   },
 
   async signInSocial(provider: SocialProviderType) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'auth',
       action: 'signin.social',
       meta: { provider },

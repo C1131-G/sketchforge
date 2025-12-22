@@ -1,6 +1,6 @@
 import { ERR } from '@/lib/errors/error.map'
 import { boardDal } from '@/lib/dal/board.dal'
-import { boardMemberDal } from '@/lib/dal/boardMember.dal'
+import { boardMemberDal } from '@/lib/dal/board-member.dal'
 import { RoleType } from '@/prisma/generated/prisma/enums'
 
 export async function requireBoard(boardId: string) {

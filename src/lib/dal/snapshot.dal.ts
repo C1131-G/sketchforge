@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma/prisma'
 import { SnapshotKind } from '@/prisma/generated/prisma/enums'
 import { Prisma } from '@/prisma/generated/prisma/client'
-import { withLogContext } from '@/lib/logger/helper'
+import { createLogger } from '@/lib/logger/logger'
 import { ERR } from '@/lib/errors/error.map'
 
 export const snapshotDal = {
@@ -11,7 +11,7 @@ export const snapshotDal = {
     kind: SnapshotKind
     snapshotJson: Prisma.InputJsonValue
   }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'snapshot.create',
       meta: { boardId: data.boardId, kind: data.kind },
@@ -28,7 +28,7 @@ export const snapshotDal = {
   },
 
   async listByBoard(data: { boardId: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'snapshot.listByBoard',
       meta: { boardId: data.boardId },
@@ -46,7 +46,7 @@ export const snapshotDal = {
   },
 
   async findById(data: { snapshotId: string }) {
-    const log = withLogContext({
+    const log = createLogger({
       event: 'db',
       action: 'snapshot.findById',
       meta: { snapshotId: data.snapshotId },

@@ -1,13 +1,13 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { withLogContext } from '@/lib/logger/helper'
+import { createLogger } from '@/lib/logger/logger'
 import { authService } from '@/lib/services/auth.service'
-import { AppError } from '@/lib/errors/AppError'
+import { AppError } from '@/lib/errors/app-error'
 import { SocialProviderType } from '@/lib/types/social.types'
 
 export async function signInSocial(provider: SocialProviderType) {
-  const log = withLogContext({
+  const log = createLogger({
     event: 'auth',
     action: 'signin.social',
     meta: { provider },

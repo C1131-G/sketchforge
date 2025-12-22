@@ -1,4 +1,4 @@
-export type LogContext = {
+export type LogContextType = {
   event: string
   action: string
   userId?: string
