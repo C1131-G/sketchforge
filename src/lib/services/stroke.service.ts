@@ -44,11 +44,11 @@ export const strokeService = {
     const { id: userId } = await requireSession()
     const { strokeId } = StrokeFindByIdSchema.parse(input)
 
-    cacheTag(`strokeId:${strokeId}`)
-    cacheLife('minutes')
-
     const stroke = await strokeDal.findActiveById({ strokeId })
     if (!stroke) throw ERR.NOT_FOUND('Stroke not found')
+
+    cacheTag(`strokeId:${strokeId}`)
+    cacheLife('minutes')
 
     await requireBoardAccess(stroke.boardId, userId)
     return stroke

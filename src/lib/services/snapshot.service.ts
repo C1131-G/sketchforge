@@ -37,6 +37,7 @@ export const snapshotService = {
 
     cacheTag(`board:${boardId}:snapshots`)
     cacheLife('minutes')
+
     await requireBoardAccess(boardId, userId)
     return snapshotDal.listByBoard({ boardId })
   },
@@ -45,10 +46,13 @@ export const snapshotService = {
     'use cache'
     const { id: userId } = await requireSession()
     const { snapshotId } = SnapshotFindByIdSchema.parse(input)
+
     const snapshot = await snapshotDal.findById({ snapshotId })
     if (!snapshot) throw ERR.NOT_FOUND('Snapshot not found')
+
     cacheTag(`snapshot:${snapshotId}`)
     cacheLife('minutes')
+
     await requireBoardAccess(snapshot.boardId, userId)
     return snapshot
   },
