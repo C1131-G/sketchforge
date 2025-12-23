@@ -1,4 +1,4 @@
-import { SessionUserType } from '@/lib/types/session-user.types'
+import { SessionUserType } from '@/lib/types/session-user.type'
 import { auth } from '@/lib/auth/auth'
 import { headers } from 'next/headers'
 import { ERR } from '@/lib/errors/error.map'

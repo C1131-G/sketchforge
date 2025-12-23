@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger/pino-logger'
-import { LogContextType } from '@/lib/types/logger.types'
+import { LogContextType } from '@/lib/types/logger.type'
 
 export const createLogger = (ctx: LogContextType) => ({
   info(message: string) {

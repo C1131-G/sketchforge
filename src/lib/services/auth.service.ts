@@ -3,7 +3,7 @@ import { createLogger } from '@/lib/logger/logger'
 import { ERR } from '@/lib/errors/error.map'
 import { userService } from '@/lib/services/user.service'
 import { auth } from '@/lib/auth/auth'
-import { SocialProviderType } from '@/lib/types/social.types'
+import { SocialProviderType } from '@/lib/types/social.type'
 
 export const authService = {
   async signUp(input: unknown) {

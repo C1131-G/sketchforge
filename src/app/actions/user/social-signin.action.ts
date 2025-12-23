@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { createLogger } from '@/lib/logger/logger'
 import { authService } from '@/lib/services/auth.service'
 import { AppError } from '@/lib/errors/app-error'
-import { SocialProviderType } from '@/lib/types/social.types'
+import { SocialProviderType } from '@/lib/types/social.type'
 
 export async function signInSocialAction(provider: SocialProviderType) {
   const log = createLogger({
