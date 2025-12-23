@@ -1,10 +1,15 @@
 import { boardService } from '@/lib/services/board.service'
 import { AppError } from '@/lib/errors/app-error'
 
-export async function GET() {
+export async function GET(
+  req: Request,
+  { params }: { params: { boardId: string } },
+) {
   try {
-    const boards = await boardService.listOwnerBoards()
-    return Response.json({ success: true, data: boards })
+    const board = await boardService.findById({
+      boardId: params.boardId,
+    })
+    return Response.json({ success: true, data: board })
   } catch (err) {
     if (err instanceof AppError) {
       return Response.json(
@@ -12,10 +17,10 @@ export async function GET() {
         { status: err.status },
       )
     }
-    console.error('List boards route crashed', err)
+    console.error('Get board route crashed', err)
 
     return Response.json(
-      { success: false, error: 'Something went wrong' },
+      { success: false, error: 'something went wrong' },
       { status: 500 },
     )
   }

@@ -1,15 +1,16 @@
-import { boardService } from '@/lib/services/board.service'
+import { layerService } from '@/lib/services/layer.service'
 import { AppError } from '@/lib/errors/app-error'
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: { boardId: string } },
 ) {
   try {
-    const board = await boardService.findById({
-      boardId: params.id,
+    const layers = await layerService.listByBoard({
+      boardId: params.boardId,
     })
-    return Response.json({ success: true, data: board })
+
+    return Response.json({ success: true, data: layers })
   } catch (err) {
     if (err instanceof AppError) {
       return Response.json(
@@ -17,10 +18,11 @@ export async function GET(
         { status: err.status },
       )
     }
-    console.error('Get board route crashed', err)
+
+    console.error('List layers crashed', err)
 
     return Response.json(
-      { success: false, error: 'something went wrong' },
+      { success: false, message: 'Something went wrong' },
       { status: 500 },
     )
   }

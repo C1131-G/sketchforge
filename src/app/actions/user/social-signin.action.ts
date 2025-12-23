@@ -6,7 +6,7 @@ import { authService } from '@/lib/services/auth.service'
 import { AppError } from '@/lib/errors/app-error'
 import { SocialProviderType } from '@/lib/types/social.types'
 
-export async function signInSocial(provider: SocialProviderType) {
+export async function signInSocialAction(provider: SocialProviderType) {
   const log = createLogger({
     event: 'auth',
     action: 'signin.social',

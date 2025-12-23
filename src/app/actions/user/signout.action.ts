@@ -5,7 +5,7 @@ import { AppError } from '@/lib/errors/app-error'
 import { authService } from '@/lib/services/auth.service'
 import { createLogger } from '@/lib/logger/logger'
 
-export async function signOut() {
+export async function signOutAction() {
   const log = createLogger({ event: 'auth', action: 'signout' })
   try {
     const data = await authService.signOut(await headers())

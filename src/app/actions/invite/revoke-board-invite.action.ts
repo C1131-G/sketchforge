@@ -4,7 +4,7 @@ import { createLogger } from '@/lib/logger/logger'
 import { boardMemberService } from '@/lib/services/board-member.service'
 import { AppError } from '@/lib/errors/app-error'
 
-export async function revokeBoardInvite(input: unknown) {
+export async function revokeBoardInviteAction(input: unknown) {
   const log = createLogger({ event: 'invite', action: 'revoke' })
   try {
     await boardMemberService.revokeInvite(input)

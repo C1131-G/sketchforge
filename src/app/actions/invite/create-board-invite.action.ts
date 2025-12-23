@@ -4,7 +4,7 @@ import { createLogger } from '@/lib/logger/logger'
 import { boardMemberService } from '@/lib/services/board-member.service'
 import { AppError } from '@/lib/errors/app-error'
 
-export async function createBoardInvite(input: unknown) {
+export async function createBoardInviteAction(input: unknown) {
   const log = createLogger({ event: 'invite', action: 'create' })
   try {
     const invite = await boardMemberService.createInvite(input)

@@ -3,11 +3,11 @@ import { AppError } from '@/lib/errors/app-error'
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: { boardId: string } },
 ) {
   try {
     const members = await boardMemberService.listMembers({
-      boardId: params.id,
+      boardId: params.boardId,
     })
     return Response.json({ success: true, data: members })
   } catch (err) {

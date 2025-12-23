@@ -4,7 +4,7 @@ import { boardService } from '@/lib/services/board.service'
 import { createLogger } from '@/lib/logger/logger'
 import { AppError } from '@/lib/errors/app-error'
 
-export async function createBoard(input: unknown) {
+export async function createBoardAction(input: unknown) {
   const log = createLogger({ event: 'board', action: 'create' })
 
   try {

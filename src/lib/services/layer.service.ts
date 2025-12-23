@@ -48,11 +48,11 @@ export const layerService = {
     const { id: userId } = await requireSession()
     const { layerId } = LayerFindByIdSchema.parse(input)
 
-    cacheTag(`layer:${layerId}`)
-    cacheLife('minutes')
-
     const layer = await layerDal.findActiveById({ layerId })
     if (!layer) throw ERR.NOT_FOUND('Layer not found')
+
+    cacheTag(`layer:${layerId}`)
+    cacheLife('minutes')
 
     await requireBoardAccess(layer.boardId, userId)
     return layer
@@ -98,6 +98,6 @@ export const layerService = {
     revalidateTag(`layer:${layerId}`, 'max')
     revalidateTag(`board:${layer.boardId}:layers`, 'max')
 
-    return { success: true }
+    return true
   },
 }

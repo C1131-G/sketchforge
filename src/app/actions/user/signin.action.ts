@@ -4,7 +4,7 @@ import { authService } from '@/lib/services/auth.service'
 import { createLogger } from '@/lib/logger/logger'
 import { AppError } from '@/lib/errors/app-error'
 
-export async function signIn(formData: FormData) {
+export async function signInAction(formData: FormData) {
   const log = createLogger({ event: 'auth', action: 'signin' })
   try {
     const data = await authService.signIn({
