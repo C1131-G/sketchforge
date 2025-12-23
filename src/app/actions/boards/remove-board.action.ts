@@ -11,7 +11,7 @@ export async function removeBoardAction(input: unknown) {
     const board = await boardService.remove(input)
 
     emitBoardEvent({
-      type: 'board_deleted',
+      type: 'board_removed',
       boardId: board.id,
       entityId: board.id,
       actorUserId: board.ownerId,

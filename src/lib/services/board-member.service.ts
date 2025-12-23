@@ -81,12 +81,12 @@ export const boardMemberService = {
       throw ERR.BAD_REQUEST('Cannot remove board owner')
     }
 
-    const removedMember = await boardMemberDal.remove({
+    const member = await boardMemberDal.remove({
       boardId,
       targetUserId,
     })
     revalidateTag(`board:${boardId}:members`, 'max')
-    return removedMember
+    return member
   },
 
   async createInvite(input: unknown) {
