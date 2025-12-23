@@ -71,11 +71,11 @@ export const boardService = {
     const { boardId } = BoardRemoveSchema.parse(input)
 
     await requireOwner(boardId, userId)
-    await boardDal.softDelete({ boardId })
+    const board = await boardDal.softDelete({ boardId })
 
     revalidateTag(`board:${boardId}`, 'max')
     revalidateTag(`owner:${userId}:boards`, 'max')
 
-    return { success: true }
+    return board
   },
 }

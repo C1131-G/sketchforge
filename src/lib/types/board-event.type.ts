@@ -1,6 +1,7 @@
 export type BoardEvent = {
   type:
     | 'board_updated'
+    | 'board_deleted'
     | 'shape_created'
     | 'shape_updated'
     | 'shape_deleted'
