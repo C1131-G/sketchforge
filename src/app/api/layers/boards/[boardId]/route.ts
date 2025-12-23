@@ -19,7 +19,7 @@ export async function GET(
       )
     }
 
-    console.error('List layers crashed', err)
+    console.error('Get list layers by id crashed', err)
 
     return Response.json(
       { success: false, message: 'Something went wrong' },

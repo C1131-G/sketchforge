@@ -46,11 +46,11 @@ export const shapeService = {
     const { id: userId } = await requireSession()
     const { shapeId } = ShapeFindByIdSchema.parse(input)
 
-    cacheTag(`shape:${shapeId}`)
-    cacheLife('minutes')
-
     const shape = await shapeDal.findActiveById({ shapeId })
     if (!shape) throw ERR.NOT_FOUND('Shape not found')
+
+    cacheTag(`shape:${shapeId}`)
+    cacheLife('minutes')
 
     await requireBoardAccess(shape.boardId, userId)
     return shape
@@ -115,6 +115,6 @@ export const shapeService = {
 
     revalidateTag(`shape:${shapeId}`, 'max')
     revalidateTag(`board:${shape.boardId}:shapes`, 'max')
-    return { success: true }
+    return true
   },
 }

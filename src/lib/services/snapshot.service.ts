@@ -45,11 +45,10 @@ export const snapshotService = {
     'use cache'
     const { id: userId } = await requireSession()
     const { snapshotId } = SnapshotFindByIdSchema.parse(input)
-    cacheTag(`snapshot:${snapshotId}`)
-    cacheLife('minutes')
     const snapshot = await snapshotDal.findById({ snapshotId })
     if (!snapshot) throw ERR.NOT_FOUND('Snapshot not found')
-
+    cacheTag(`snapshot:${snapshotId}`)
+    cacheLife('minutes')
     await requireBoardAccess(snapshot.boardId, userId)
     return snapshot
   },

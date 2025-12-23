@@ -27,11 +27,11 @@ export const boardService = {
   async findById(input: unknown) {
     'use cache'
     const { boardId } = BoardFindByIdSchema.parse(input)
+    const board = await requireBoard(boardId)
+    if (board.visibility !== 'PRIVATE') return board
+
     cacheTag(`board:${boardId}`)
     cacheLife('minutes')
-    const board = await requireBoard(boardId)
-
-    if (board.visibility !== 'PRIVATE') return board
 
     const { id: userId } = await requireSession()
     if (board.ownerId !== userId) throw ERR.NOT_FOUND('Board not found')
