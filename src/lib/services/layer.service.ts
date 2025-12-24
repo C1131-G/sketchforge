@@ -98,6 +98,6 @@ export const layerService = {
     revalidateTag(`layer:${layerId}`, 'max')
     revalidateTag(`board:${layer.boardId}:layers`, 'max')
 
-    return true
+    return layer
   },
 }
