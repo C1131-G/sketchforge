@@ -3,12 +3,24 @@
 import { createLogger } from '@/lib/logger/logger'
 import { shapeService } from '@/lib/services/shape.service'
 import { AppError } from '@/lib/errors/app-error'
+import { emitBoardEvent } from '@/lib/ws/emitter'
+import { requireSession } from '@/lib/auth/require-session'
 
 export async function removeShapeAction(input: unknown) {
   const log = createLogger({ event: 'shape', action: 'remove' })
 
   try {
-    await shapeService.remove(input)
+    const { id: actorUserId } = await requireSession()
+    const shape = await shapeService.remove(input)
+
+    emitBoardEvent({
+      type: 'shape_deleted',
+      boardId: shape.boardId,
+      entityId: shape.id,
+      actorUserId,
+      timestamp: Date.now(),
+    })
+
     return { success: true }
   } catch (err) {
     if (err instanceof AppError) {

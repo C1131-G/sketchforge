@@ -115,6 +115,6 @@ export const shapeService = {
 
     revalidateTag(`shape:${shapeId}`, 'max')
     revalidateTag(`board:${shape.boardId}:shapes`, 'max')
-    return true
+    return shape
   },
 }
